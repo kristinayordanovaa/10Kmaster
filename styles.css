@@ -616,10 +616,22 @@ body {
 }
 
 .footer-content {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
-    gap: 40px;
+    display: flex;
+    justify-content: space-between;
+    gap: 60px;
     margin-bottom: 40px;
+}
+
+.footer-brand {
+    flex: 0 0 auto;
+    max-width: 250px;
+}
+
+.footer-links {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 40px;
 }
 
 .footer-brand p {
@@ -630,6 +642,7 @@ body {
 .footer-column h4 {
     margin-bottom: 16px;
     font-weight: 600;
+    font-size: 16px;
 }
 
 .footer-column a {
@@ -669,7 +682,7 @@ body {
 }
 
 /* Responsive Design */
-@media (max-width: 968px) {
+@media (max-width: 768px) {
     .nav-links {
         display: none;
     }
