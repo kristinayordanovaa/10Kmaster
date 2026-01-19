@@ -56,19 +56,19 @@
                         </div>
                     </div>
                     <nav class="demo-nav">
-                        <a href="#" class="demo-nav-item active">
+                        <a href="#" class="demo-nav-item active" data-section="dashboard">
                             <span>📊</span> Dashboard
                         </a>
-                        <a href="#" class="demo-nav-item">
+                        <a href="#" class="demo-nav-item" data-section="track-time">
                             <span>⏱️</span> Track Time
                         </a>
-                        <a href="#" class="demo-nav-item">
+                        <a href="#" class="demo-nav-item" data-section="analytics">
                             <span>📈</span> Analytics
                         </a>
-                        <a href="#" class="demo-nav-item">
-                            <span>🎯</span> Goals
+                        <a href="#" class="demo-nav-item" data-section="achievements">
+                            <span>🏆</span> Achievements
                         </a>
-                        <a href="#" class="demo-nav-item">
+                        <a href="#" class="demo-nav-item" data-section="settings">
                             <span>⚙️</span> Settings
                         </a>
                     </nav>
@@ -76,49 +76,257 @@
 
                 <!-- Main Content -->
                 <main class="demo-main">
-                    <!-- Stats Overview -->
-                    <div class="demo-stats">
-                        <div class="demo-stat-card">
-                            <div class="demo-stat-icon">⏱️</div>
-                            <div class="demo-stat-info">
-                                <div class="demo-stat-value" id="totalHours">0</div>
-                                <div class="demo-stat-label">Total Hours</div>
+                    <!-- Dashboard Section -->
+                    <div id="dashboard-section" class="demo-section-content active">
+                        <!-- Stats Overview -->
+                        <div class="demo-stats">
+                            <div class="demo-stat-card">
+                                <div class="demo-stat-icon">⏱️</div>
+                                <div class="demo-stat-info">
+                                    <div class="demo-stat-value" id="totalHours">0</div>
+                                    <div class="demo-stat-label">Total Hours</div>
+                                </div>
+                            </div>
+                            <div class="demo-stat-card">
+                                <div class="demo-stat-icon">🎯</div>
+                                <div class="demo-stat-info">
+                                    <div class="demo-stat-value" id="skillCount">6</div>
+                                    <div class="demo-stat-label">Active Skills</div>
+                                </div>
+                            </div>
+                            <div class="demo-stat-card">
+                                <div class="demo-stat-icon">🔥</div>
+                                <div class="demo-stat-info">
+                                    <div class="demo-stat-value">47</div>
+                                    <div class="demo-stat-label">Day Streak</div>
+                                </div>
+                            </div>
+                            <div class="demo-stat-card">
+                                <div class="demo-stat-icon">📅</div>
+                                <div class="demo-stat-info">
+                                    <div class="demo-stat-value">12.5</div>
+                                    <div class="demo-stat-label">Hrs This Week</div>
+                                </div>
                             </div>
                         </div>
-                        <div class="demo-stat-card">
-                            <div class="demo-stat-icon">🎯</div>
-                            <div class="demo-stat-info">
-                                <div class="demo-stat-value" id="skillCount">6</div>
-                                <div class="demo-stat-label">Active Skills</div>
+
+                        <!-- Skills Header -->
+                        <div class="demo-header">
+                            <h2>Your Skills</h2>
+                            <button class="btn btn-primary" id="addSkillBtn">
+                                <span>+</span> Add New Skill
+                            </button>
+                        </div>
+
+                        <!-- Skills Grid -->
+                        <div class="demo-skills-grid" id="skillsGrid">
+                            <!-- Skills will be dynamically inserted here -->
+                        </div>
+                    </div>
+
+                    <!-- Analytics Section -->
+                    <div id="analytics-section" class="demo-section-content">
+                        <div class="demo-header">
+                            <h2>Analytics</h2>
+                            <select id="heatmapTimeframe" class="form-input analytics-dropdown">
+                                <option value="1">Past Week</option>
+                                <option value="4">Past 4 Weeks</option>
+                                <option value="12" selected>Past 3 Months</option>
+                                <option value="26">Past 6 Months</option>
+                                <option value="52">Past Year</option>
+                            </select>
+                        </div>
+
+                        <!-- Practice Heatmap -->
+                        <div class="analytics-card">
+                            <h3 class="analytics-card-title">Practice Activity</h3>
+                            <p class="analytics-card-subtitle" id="heatmapSubtitle">Your practice intensity over the last 12 weeks</p>
+                            
+                            <div class="heatmap-container">
+                                <div class="heatmap-months" id="heatmapMonths"></div>
+                                <div class="heatmap-wrapper">
+                                    <div class="heatmap-weekdays">
+                                        <div class="heatmap-weekday">Mon</div>
+                                        <div class="heatmap-weekday">Wed</div>
+                                        <div class="heatmap-weekday">Fri</div>
+                                    </div>
+                                    <div class="heatmap-grid" id="heatmapGrid">
+                                        <!-- Heatmap cells will be generated by JavaScript -->
+                                    </div>
+                                </div>
+                                <div class="heatmap-legend">
+                                    <span>Less</span>
+                                    <div class="heatmap-legend-item" data-level="0"></div>
+                                    <div class="heatmap-legend-item" data-level="1"></div>
+                                    <div class="heatmap-legend-item" data-level="2"></div>
+                                    <div class="heatmap-legend-item" data-level="3"></div>
+                                    <div class="heatmap-legend-item" data-level="4"></div>
+                                    <span>More</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="demo-stat-card">
-                            <div class="demo-stat-icon">🔥</div>
-                            <div class="demo-stat-info">
-                                <div class="demo-stat-value">47</div>
-                                <div class="demo-stat-label">Day Streak</div>
-                            </div>
-                        </div>
-                        <div class="demo-stat-card">
-                            <div class="demo-stat-icon">📅</div>
-                            <div class="demo-stat-info">
-                                <div class="demo-stat-value">12.5</div>
-                                <div class="demo-stat-label">Hrs This Week</div>
+
+                        <!-- Skills Breakdown -->
+                        <div class="analytics-card">
+                            <h3 class="analytics-card-title">Practice Breakdown by Skill</h3>
+                            <p class="analytics-card-subtitle" id="breakdownSubtitle">Hours practiced per skill in the selected timeframe</p>
+                            
+                            <div class="skills-breakdown" id="skillsBreakdown">
+                                <!-- Skill bars will be generated by JavaScript -->
                             </div>
                         </div>
                     </div>
 
-                    <!-- Skills Header -->
-                    <div class="demo-header">
-                        <h2>Your Skills</h2>
-                        <button class="btn btn-primary" id="addSkillBtn">
-                            <span>+</span> Add New Skill
-                        </button>
+                    <!-- Achievements Section -->
+                    <div id="achievements-section" class="demo-section-content">
+                        <h2 class="section-title">Achievements</h2>
+                        <p class="section-subtitle">Track your progress and unlock achievements as you master your skills</p>
+                        
+                        <div class="achievements-stats">
+                            <div class="achievement-stat-card">
+                                <div class="achievement-stat-value" id="achievementsEarned">0</div>
+                                <div class="achievement-stat-label">Earned</div>
+                            </div>
+                            <div class="achievement-stat-card">
+                                <div class="achievement-stat-value" id="achievementsTotal">0</div>
+                                <div class="achievement-stat-label">Total</div>
+                            </div>
+                            <div class="achievement-stat-card">
+                                <div class="achievement-stat-value" id="achievementsProgress">0%</div>
+                                <div class="achievement-stat-label">Progress</div>
+                            </div>
+                        </div>
+
+                        <!-- Milestone Achievements -->
+                        <div class="achievement-category">
+                            <h3 class="achievement-category-title">🎯 Milestones</h3>
+                            <div class="achievements-grid" id="milestonesGrid">
+                                <!-- Generated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Consistency Achievements -->
+                        <div class="achievement-category">
+                            <h3 class="achievement-category-title">🔥 Consistency</h3>
+                            <div class="achievements-grid" id="consistencyGrid">
+                                <!-- Generated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Diversity Achievements -->
+                        <div class="achievement-category">
+                            <h3 class="achievement-category-title">🌟 Skill Diversity</h3>
+                            <div class="achievements-grid" id="diversityGrid">
+                                <!-- Generated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Speed & Intensity Achievements -->
+                        <div class="achievement-category">
+                            <h3 class="achievement-category-title">⚡ Speed & Intensity</h3>
+                            <div class="achievements-grid" id="speedGrid">
+                                <!-- Generated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Special Achievements -->
+                        <div class="achievement-category">
+                            <h3 class="achievement-category-title">✨ Special</h3>
+                            <div class="achievements-grid" id="specialGrid">
+                                <!-- Generated by JavaScript -->
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Skills Grid -->
-                    <div class="demo-skills-grid" id="skillsGrid">
-                        <!-- Skills will be dynamically inserted here -->
+                    <!-- Settings Section -->
+                    <div id="settings-section" class="demo-section-content">
+                        <h2 class="section-title">Settings</h2>
+                        
+                        <!-- Avatar Selection -->
+                        <div class="settings-card">
+                            <h3 class="settings-card-title">Profile Avatar</h3>
+                            <p class="settings-card-subtitle">Choose your profile picture</p>
+                            
+                            <div class="avatar-grid" id="avatarGrid">
+                                <!-- Avatar options will be generated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Subscription Plan -->
+                        <div class="settings-card">
+                            <h3 class="settings-card-title">Subscription Plan</h3>
+                            <p class="settings-card-subtitle">Manage your subscription</p>
+                            
+                            <div class="current-plan">
+                                <div class="plan-info">
+                                    <div class="plan-badge" id="currentPlanBadge">Free Plan</div>
+                           
+                                </div>
+                            </div>
+
+                            <div class="plan-upgrade">
+                                <h4>Upgrade to Premium</h4>
+                                <div class="upgrade-plans">
+                                    <div class="upgrade-plan-card">
+                                        <div class="upgrade-plan-header">
+                                            <h5>Pro</h5>
+                                            <div class="upgrade-plan-price">
+                                                <span class="price">$2.99</span>
+                                                <span class="period">/month</span>
+                                            </div>
+                                        </div>
+                                        <ul class="upgrade-plan-features">
+                                            <li>✓ Unlimited skills</li>
+                                            <li>✓ Unlimited history</li>
+                                            <li>✓ Achievement Badges</li>
+                        
+                                           
+                                        </ul>
+                                        <button class="btn btn-primary btn-block">Upgrade to Pro</button>
+                                    </div>
+                                    
+                                    <div class="upgrade-plan-card">
+                                        <div class="upgrade-plan-header">
+                                            <h5>Lifetime</h5>
+                                            <div class="upgrade-plan-price">
+                                                <span class="price">$39.99</span>
+                                                <span class="period">one-time</span>
+                                            </div>
+                                        </div>
+                                        <ul class="upgrade-plan-features">
+                                            <li>✓ All Pro features</li>
+                                            <li>✓ Priority support</li>
+                                            <li>✓ Early access to new features</li>
+                                            <li>✓ Lifetime updates</li>
+                        
+                                        </ul>
+                                        <button class="btn btn-primary btn-block">Get Lifetime Access</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Change Password -->
+                        <div class="settings-card">
+                            <h3 class="settings-card-title">Change Password</h3>
+                            <p class="settings-card-subtitle">Update your account password</p>
+                            
+                            <form id="passwordForm" class="settings-form">
+                                <div class="form-group">
+                                    <label for="currentPassword">Current Password</label>
+                                    <input type="password" id="currentPassword" class="form-input" placeholder="Enter current password" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="newPassword">New Password</label>
+                                    <input type="password" id="newPassword" class="form-input" placeholder="Enter new password" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="confirmPassword">Confirm New Password</label>
+                                    <input type="password" id="confirmPassword" class="form-input" placeholder="Confirm new password" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Update Password</button>
+                            </form>
+                        </div>
                     </div>
                 </main>
             </div>
