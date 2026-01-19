@@ -116,7 +116,7 @@
                     document.title = `${title} - 10K to Mastery`;
                     
                     // Convert markdown to HTML
-                    const htmlContent = marked.parse(content);
+                    const htmlContent = marked.marked(content);
                     document.getElementById('post-content').innerHTML = htmlContent;
                 })
                 .catch(error => {

@@ -735,7 +735,7 @@ body {
 }
 
 .legal-content {
-    max-width: 800px;
+
     margin: 0 auto;
     background: var(--bg-primary);
     padding: 60px;
@@ -1877,7 +1877,7 @@ body {
 }
 
 .blog-post-article {
-    max-width: 800px;
+
     margin: 0 auto;
     background: white;
     padding: 60px;
