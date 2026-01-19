@@ -201,3 +201,130 @@ const heroStats = document.querySelector('.hero-stats');
 if (heroStats) {
     statsObserver.observe(heroStats);
 }
+
+// Help Center FAQ Accordion
+document.addEventListener('DOMContentLoaded', () => {
+    const faqQuestions = document.querySelectorAll('.faq-question');
+    
+    faqQuestions.forEach(question => {
+        question.addEventListener('click', () => {
+            const faqItem = question.parentElement;
+            const isActive = faqItem.classList.contains('active');
+            
+            // Close all other FAQ items
+            document.querySelectorAll('.faq-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Toggle current item
+            if (!isActive) {
+                faqItem.classList.add('active');
+            }
+        });
+    });
+    
+    // Help Center Search Functionality
+    const helpSearch = document.getElementById('helpSearch');
+    if (helpSearch) {
+        helpSearch.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const faqItems = document.querySelectorAll('.faq-item');
+            const categories = document.querySelectorAll('.faq-category');
+            
+            if (searchTerm === '') {
+                // Show all items
+                faqItems.forEach(item => item.style.display = 'block');
+                categories.forEach(cat => cat.style.display = 'block');
+                return;
+            }
+            
+            categories.forEach(category => {
+                let hasVisibleItems = false;
+                const items = category.querySelectorAll('.faq-item');
+                
+                items.forEach(item => {
+                    const question = item.querySelector('.faq-question span').textContent.toLowerCase();
+                    const answer = item.querySelector('.faq-answer').textContent.toLowerCase();
+                    
+                    if (question.includes(searchTerm) || answer.includes(searchTerm)) {
+                        item.style.display = 'block';
+                        hasVisibleItems = true;
+                        // Highlight matching items
+                        if (!item.classList.contains('active')) {
+                            item.classList.add('active');
+                        }
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+                
+                // Hide category if no items match
+                category.style.display = hasVisibleItems ? 'block' : 'none';
+            });
+        });
+    }
+    
+    // Modal functionality
+    const modal = document.getElementById('contactModal');
+    const openModalBtns = document.querySelectorAll('[data-open-modal]');
+    const closeModalBtn = document.querySelector('.modal-close');
+    
+    if (modal) {
+        openModalBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+        });
+        
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener('click', () => {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+        }
+        
+        // Close modal when clicking outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+    }
+    
+    // Contact Form Submission (in modal)
+    const contactForm = document.getElementById('contactForm');
+    if (contactForm) {
+        contactForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                subject: document.getElementById('subject').value,
+                message: document.getElementById('message').value
+            };
+            
+            // Simulate form submission
+            showNotification('Thank you! Your message has been sent. We\'ll get back to you within 24 hours.');
+            contactForm.reset();
+            
+            // Close modal if it exists
+            const modal = document.getElementById('contactModal');
+            if (modal && modal.classList.contains('active')) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+    }
+});
