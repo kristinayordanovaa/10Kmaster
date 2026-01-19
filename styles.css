@@ -26,6 +26,10 @@ body {
     overflow-x: hidden;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 .container {
     max-width: 1200px;
     margin: 0 auto;
@@ -61,6 +65,12 @@ body {
 
 .logo-icon {
     font-size: 24px;
+}
+
+.logo-image {
+    height: 32px;
+    width: auto;
+    margin-right: 4px;
 }
 
 .nav-links {
@@ -887,7 +897,8 @@ body {
 /* About Page Styles */
 .about-hero {
     padding: 140px 0 80px;
-    background: var(--gradient);
+    background: #1200FF;
+    background: linear-gradient(16deg, rgba(18, 0, 255, 1) 0%, rgba(252, 187, 248, 1) 63%);
     color: white;
     text-align: center;
 }
@@ -1213,7 +1224,8 @@ body {
 /* Contact Page Styles - REMOVED */
 .contact-hero {
     padding: 140px 0 80px;
-    background: var(--gradient);
+    background: #1200FF;
+    background: linear-gradient(16deg, rgba(18, 0, 255, 1) 0%, rgba(252, 187, 248, 1) 63%);
     color: white;
     text-align: center;
 }
@@ -1510,7 +1522,8 @@ body {
 /* Help Center Styles */
 .help-hero {
     padding: 140px 0 80px;
-    background: var(--gradient);
+    background: #1200FF;
+    background: linear-gradient(16deg, rgba(18, 0, 255, 1) 0%, rgba(252, 187, 248, 1) 63%);
     color: white;
     text-align: center;
 }
@@ -1800,7 +1813,8 @@ body {
 /* Blog Styles */
 .blog-hero {
     padding: 140px 0 80px;
-    background: var(--gradient);
+    background: #1200FF;
+    background: linear-gradient(16deg, rgba(18, 0, 255, 1) 0%, rgba(252, 187, 248, 1) 63%);
     color: white;
     text-align: center;
 }
@@ -2087,7 +2101,8 @@ body {
 /* Reviews Page */
 .reviews-header {
     padding: 120px 0 60px;
-    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+    background: #1200FF;
+    background: linear-gradient(16deg, rgba(18, 0, 255, 1) 0%, rgba(252, 187, 248, 1) 63%);
     text-align: center;
 }
 
@@ -2192,7 +2207,8 @@ body {
 /* Demo Page */
 .demo-banner {
     padding: 120px 0 40px;
-    background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
+    background: #1200FF;
+    background: linear-gradient(16deg, rgba(18, 0, 255, 1) 0%, rgba(252, 187, 248, 1) 63%);
     text-align: center;
     color: white;
 }
