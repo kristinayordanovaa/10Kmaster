@@ -36,7 +36,8 @@
     </nav>
 
     <!-- Blog Post Header -->
-    <section class="blog-post-header">
+    <section class="blog-post-header" id="post-header-image">
+        <div class="blog-post-header-overlay"></div>
         <div class="container">
             <h1 id="post-title">Loading...</h1>
         </div>
@@ -90,12 +91,34 @@
     </footer>
 
     <script src="script.js"></script>
+    <script src="blog-loader.js"></script>
     <script>
         // Get post slug from URL parameter
         const urlParams = new URLSearchParams(window.location.search);
         const postSlug = urlParams.get('post');
 
         if (postSlug) {
+            // Find post data
+            const postData = blogPosts.find(post => post.slug === postSlug);
+            
+            // Set header image if available - check if image file exists first
+            if (postData && postData.image) {
+                // Try to load the image
+                const img = new Image();
+                img.onload = function() {
+                    // Image exists, set it as background
+                    document.getElementById('post-header-image').style.backgroundImage = `url('${postData.image}')`;
+                };
+                img.onerror = function() {
+                    // Image doesn't exist, use gradient background
+                    document.getElementById('post-header-image').style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                };
+                img.src = postData.image;
+            } else {
+                // No image specified, use gradient background
+                document.getElementById('post-header-image').style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            }
+            
             // Fetch and render the markdown file
             fetch(`blog/${postSlug}.md`)
                 .then(response => {

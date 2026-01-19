@@ -3,22 +3,26 @@ const blogPosts = [
     {
         slug: 'the-science-behind-10000-hours',
         title: 'The Science Behind the 10,000 Hour Rule',
-        excerpt: 'Is mastery really about hitting a magic number? Let\'s dive into the research behind deliberate practice and what it takes to truly master a skill.'
+        excerpt: 'Is mastery really about hitting a magic number? Let\'s dive into the research behind deliberate practice and what it takes to truly master a skill.',
+        image: 'img/blog/science_behind_10k_rule.jpg' // Add your image here
     },
     {
         slug: '5-tips-consistent-practice',
         title: '5 Tips for Building a Consistent Practice Habit',
-        excerpt: 'Consistency is the secret sauce to mastery. Here\'s how to make practice a natural part of your daily routine.'
+        excerpt: 'Consistency is the secret sauce to mastery. Here\'s how to make practice a natural part of your daily routine.',
+        image: 'img/blog/5_tips.jpg'
     },
     {
         slug: 'tracking-progress-effectively',
         title: 'How to Track Your Progress Effectively',
-        excerpt: 'Not all practice hours are equal. Learn how to track what matters and measure real improvement.'
+        excerpt: 'Not all practice hours are equal. Learn how to track what matters and measure real improvement.',
+        image: 'img/blog/how_to_track.jpg'
     },
     {
         slug: 'overcoming-practice-plateaus',
         title: 'Overcoming Practice Plateaus',
-        excerpt: 'Stuck in your progress? Here\'s how to break through plateaus and continue your journey to mastery.'
+        excerpt: 'Stuck in your progress? Here\'s how to break through plateaus and continue your journey to mastery.',
+        image: 'img/blog/practice_plateau.jpg'
     }
 ];
 
@@ -30,8 +34,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Generate blog cards
         const blogCardsHtml = blogPosts.map(post => `
             <a href="blog-post.html?post=${post.slug}" class="blog-card">
-                <h3>${post.title}</h3>
-                <p>${post.excerpt}</p>
+                <div class="blog-card-content">
+                    <h3>${post.title}</h3>
+                    <p>${post.excerpt}</p>
+                </div>
             </a>
         `).join('');
         

@@ -8,18 +8,39 @@ Markdown is a lightweight markup language that lets you format text using plain 
 
 ## How to Create a New Blog Post
 
+### 1. Prepare Your Header Image
+
+**Recommended Image Specifications:**
+- **Resolution:** 1200 x 630 pixels (ideal) or 1600 x 900 pixels (higher quality)
+- **Aspect Ratio:** 16:9 works best
+- **Format:** JPG or PNG
+- **File Size:** Keep under 200KB for fast loading
+- **Upload Location:** Save to `/img/blog/your-image-name.jpg`
+
+### 2. Create Your Markdown File
+
 1. Create a new `.md` file in the `/blog` folder
 2. Use a URL-friendly filename (e.g., `my-awesome-post.md`)
 3. Write your content using Markdown syntax (explained below)
-4. Add the post to the `blogPosts` array in `blog-loader.js`:
+
+### 3. Register Your Post
+
+Add the post to the `blogPosts` array in `blog-loader.js`:
 
 ```javascript
 {
     slug: 'my-awesome-post',
     title: 'My Awesome Post',
-    excerpt: 'A brief description of what this post is about...'
+    excerpt: 'A brief description of what this post is about...',
+    image: 'img/blog/your-image-name.jpg'  // ← Add your image path here
 }
 ```
+
+**Important:** The `slug` must match your `.md` filename (without the extension)
+
+The header image will automatically display:
+- At the top of the blog post (400px height)
+- As a thumbnail on the blog listing page (200px height)
 
 ## Markdown Syntax Guide
 
