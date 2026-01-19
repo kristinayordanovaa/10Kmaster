@@ -51,6 +51,10 @@ let timerInterval = null;
 let timerSeconds = 0;
 let hoursThisWeek = 12.4;
 
+// Time History
+let timeHistory = [];
+let editingTimeEntryId = null;
+
 // Settings data
 let selectedAvatar = 'img/user avatars/Avatar1.png';
 const availableAvatars = [
@@ -123,8 +127,148 @@ const achievements = [
     { id: 'the-grind', category: 'special', name: 'The Grind', description: 'Add time manually 100 times', icon: '⏰', requirement: 100, current: () => userStats.sessionsLogged, max: 100 }
 ];
 
+// Time History Functions (defined early to avoid reference errors)
+function renderTimeHistory(days) {
+    const container = document.getElementById('timeHistoryList');
+    console.log('renderTimeHistory called, container:', container, 'days:', days, 'history length:', timeHistory.length);
+    
+    if (!container) {
+        console.error('Time history container not found!');
+        return;
+    }
+    
+    // Filter entries based on timeframe
+    let filteredHistory = timeHistory;
+    if (days !== 'all') {
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - days);
+        filteredHistory = timeHistory.filter(entry => entry.date >= cutoffDate);
+    }
+    
+    console.log('Filtered history length:', filteredHistory.length);
+    console.log('First few entries:', filteredHistory.slice(0, 3));
+    
+    if (filteredHistory.length === 0) {
+        container.innerHTML = '<div class="time-history-empty">No time entries found for this period.</div>';
+        return;
+    }
+    
+    console.log('Rendering', filteredHistory.length, 'entries');
+    
+    const htmlContent = filteredHistory.map(entry => {
+        const dateStr = entry.date.toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric', 
+            year: 'numeric' 
+        });
+        
+        return `
+            <div class="time-history-row">
+                <div class="time-history-col-date">${dateStr}</div>
+                <div class="time-history-col-skill">
+                    <span class="time-history-skill-name">${entry.skillName}</span>
+                </div>
+                <div class="time-history-col-time">${entry.hours}h</div>
+                <div class="time-history-col-actions">
+                    <button class="btn-icon btn-icon-edit" onclick="openEditTimeModal(${entry.id})" title="Edit">
+                        ✏️
+                    </button>
+                    <button class="btn-icon btn-icon-delete" onclick="deleteTimeEntry(${entry.id})" title="Delete">
+                        🗑️
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    console.log('Generated HTML length:', htmlContent.length);
+    console.log('First 500 chars:', htmlContent.substring(0, 500));
+    container.innerHTML = htmlContent;
+    console.log('HTML set to container, children count:', container.children.length);
+}
+
+function generateSampleTimeHistory() {
+    // Generate sample time history entries with hardcoded data for consistency
+    const today = new Date();
+    timeHistory = [];
+    
+    // Hardcoded sample entries to ensure data is always visible
+    const sampleEntries = [
+        { days: 0, skillName: 'Piano', hours: 2.5 },
+        { days: 0, skillName: 'Web Development', hours: 1.5 },
+        { days: 1, skillName: 'Spanish', hours: 1.0 },
+        { days: 1, skillName: 'Piano', hours: 3.0 },
+        { days: 2, skillName: 'Rock Climbing', hours: 2.0 },
+        { days: 2, skillName: 'Photography', hours: 1.5 },
+        { days: 3, skillName: 'Web Development', hours: 2.5 },
+        { days: 3, skillName: 'Digital Painting', hours: 1.0 },
+        { days: 4, skillName: 'Piano', hours: 2.0 },
+        { days: 4, skillName: 'Spanish', hours: 1.5 },
+        { days: 5, skillName: 'Photography', hours: 3.0 },
+        { days: 6, skillName: 'Web Development', hours: 2.0 },
+        { days: 7, skillName: 'Rock Climbing', hours: 1.5 },
+        { days: 8, skillName: 'Piano', hours: 2.5 },
+        { days: 9, skillName: 'Spanish', hours: 1.0 },
+        { days: 10, skillName: 'Digital Painting', hours: 2.0 },
+        { days: 11, skillName: 'Photography', hours: 1.5 },
+        { days: 12, skillName: 'Web Development', hours: 3.0 },
+        { days: 13, skillName: 'Piano', hours: 2.0 },
+        { days: 14, skillName: 'Rock Climbing', hours: 1.5 }
+    ];
+    
+    sampleEntries.forEach((entry, index) => {
+        const date = new Date(today);
+        date.setDate(date.getDate() - entry.days);
+        date.setHours(9 + index % 12);
+        date.setMinutes(0);
+        
+        const skill = skills.find(s => s.name === entry.skillName);
+        if (skill) {
+            timeHistory.push({
+                id: 1000000 + index,
+                skillId: skill.id,
+                skillName: entry.skillName,
+                hours: entry.hours,
+                date: new Date(date),
+                timestamp: date.getTime()
+            });
+        }
+    });
+    
+    // Add more random entries for older dates
+    for (let i = 15; i < 30; i++) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        
+        const entriesCount = Math.floor(Math.random() * 3) + 1;
+        for (let j = 0; j < entriesCount; j++) {
+            const skill = skills[Math.floor(Math.random() * skills.length)];
+            const hours = parseFloat((Math.random() * 2.5 + 0.5).toFixed(2));
+            
+            const entryDate = new Date(date);
+            entryDate.setHours(Math.floor(Math.random() * 14) + 8);
+            entryDate.setMinutes(Math.floor(Math.random() * 60));
+            
+            timeHistory.push({
+                id: 2000000 + i * 10 + j,
+                skillId: skill.id,
+                skillName: skill.name,
+                hours: hours,
+                date: new Date(date),
+                timestamp: entryDate.getTime()
+            });
+        }
+    }
+    
+    // Sort by date descending (newest first)
+    timeHistory.sort((a, b) => b.timestamp - a.timestamp);
+    
+    console.log('Time history generated:', timeHistory.length, 'entries');
+}
+
 // Initialize demo
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, initializing...');
     renderSkills();
     updateStats();
     initModal();
@@ -134,6 +278,8 @@ document.addEventListener('DOMContentLoaded', function() {
     generateHeatmap(12);
     initSettings();
     initAchievements();
+    generateSampleTimeHistory(); // Generate data first
+    initTimeHistory(); // Then initialize UI
 });
 
 // Render all skills
@@ -201,7 +347,7 @@ function createSkillCard(skill) {
             ` : ''}
             
             <div class="skill-hours">
-                <div class="skill-hours-main">${skill.hours.toLocaleString()}</div>
+                <div class="skill-hours-main">${Math.round(skill.hours).toLocaleString()}</div>
                 <div class="skill-hours-sub">of 10,000 hours</div>
             </div>
             
@@ -400,20 +546,49 @@ function deleteSkill(id) {
 
 // Add time to skill (in minutes)
 function addTime(id, minutes) {
+    console.log('addTime called:', id, minutes);
     const skill = skills.find(s => s.id === id);
+    console.log('Found skill:', skill);
     if (skill && skill.hours < 10000) {
         const hoursToAdd = minutes / 60;
         skill.hours = Math.min(skill.hours + hoursToAdd, 10000);
         hoursThisWeek += hoursToAdd;
+        console.log('Added', hoursToAdd, 'hours. New total:', skill.hours);
+        
+        // Add entry to time history
+        const newEntry = {
+            id: Date.now() + Math.random(),
+            skillId: skill.id,
+            skillName: skill.name,
+            hours: parseFloat(hoursToAdd.toFixed(2)),
+            date: new Date(),
+            timestamp: Date.now()
+        };
+        timeHistory.unshift(newEntry); // Add to beginning
+        
+        // Re-render time history if on that section
+        const currentTimeframe = document.getElementById('historyTimeframe');
+        if (currentTimeframe) {
+            const days = currentTimeframe.value === 'all' ? 'all' : parseInt(currentTimeframe.value);
+            renderTimeHistory(days);
+        }
+        
         renderSkills();
         updateStats();
         
         // Show visual feedback
-        const card = document.querySelector(`[data-id="${id}"]`).closest('.demo-skill-card');
-        card.style.transform = 'scale(1.02)';
-        setTimeout(() => {
-            card.style.transform = 'scale(1)';
-        }, 200);
+        const card = document.querySelector(`[data-id="${id}"]`);
+        if (card) {
+            const skillCard = card.closest('.demo-skill-card');
+            if (skillCard) {
+                skillCard.style.transform = 'scale(1.02)';
+                setTimeout(() => {
+                    skillCard.style.transform = 'scale(1)';
+                }, 200);
+            }
+        }
+        
+        console.log('Time added successfully');
     }
 }
 
@@ -458,6 +633,24 @@ function stopTimer() {
     if (skill && hoursToAdd > 0) {
         skill.hours = Math.min(skill.hours + hoursToAdd, 10000);
         hoursThisWeek += hoursToAdd;
+        
+        // Add entry to time history
+        const newEntry = {
+            id: Date.now() + Math.random(),
+            skillId: skill.id,
+            skillName: skill.name,
+            hours: hoursToAdd,
+            date: new Date(),
+            timestamp: Date.now()
+        };
+        timeHistory.unshift(newEntry); // Add to beginning
+        
+        // Re-render time history if on that section
+        const currentTimeframe = document.getElementById('historyTimeframe');
+        if (currentTimeframe) {
+            const days = currentTimeframe.value === 'all' ? 'all' : parseInt(currentTimeframe.value);
+            renderTimeHistory(days);
+        }
         
         // Show notification
         showNotification(`Added ${hoursToAdd.toFixed(2)} hours to ${skill.name}!`);
@@ -519,6 +712,13 @@ function initNavigation() {
                 content.classList.remove('active');
             });
             document.getElementById(`${section}-section`).classList.add('active');
+            
+            // If navigating to time history, re-render to ensure data is visible
+            if (section === 'time-history') {
+                const timeframe = document.getElementById('historyTimeframe');
+                const days = timeframe ? (timeframe.value === 'all' ? 'all' : parseInt(timeframe.value)) : 7;
+                renderTimeHistory(days);
+            }
         });
     });
 }
@@ -845,4 +1045,202 @@ function updateAchievementStats() {
     if (earnedEl) earnedEl.textContent = earnedCount;
     if (totalEl) totalEl.textContent = totalCount;
     if (progressEl) progressEl.textContent = `${progressPercent}%`;
+}
+
+// Time History Helper Functions
+function initTimeHistory() {
+    console.log('Initializing time history...');
+    initHistoryTimeframe();
+    initEditTimeModal();
+    initDeleteTimeEntryModal();
+    
+    // Expose functions to window for onclick handlers
+    window.openEditTimeModal = openEditTimeModal;
+    window.deleteTimeEntry = deleteTimeEntry;
+    
+    // Initial render if on time history page
+    const timeHistorySection = document.getElementById('time-history-section');
+    if (timeHistorySection && timeHistorySection.classList.contains('active')) {
+        renderTimeHistory(7);
+    }
+}
+
+function initDeleteTimeEntryModal() {
+    const modal = document.getElementById('deleteTimeEntryModal');
+    const closeBtn = document.getElementById('closeDeleteTimeEntryModal');
+    const cancelBtn = document.getElementById('cancelDeleteTimeEntryBtn');
+    const confirmBtn = document.getElementById('confirmDeleteTimeEntryBtn');
+    
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeDeleteTimeEntryModal);
+    }
+    
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeDeleteTimeEntryModal);
+    }
+    
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', confirmDeleteTimeEntry);
+    }
+    
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeDeleteTimeEntryModal();
+        });
+    }
+}
+
+function initHistoryTimeframe() {
+    const selector = document.getElementById('historyTimeframe');
+    if (selector) {
+        selector.addEventListener('change', (e) => {
+            const days = e.target.value === 'all' ? 'all' : parseInt(e.target.value);
+            renderTimeHistory(days);
+        });
+    }
+}
+
+function initEditTimeModal() {
+    const modal = document.getElementById('editTimeModal');
+    const closeBtn = document.getElementById('closeEditTimeModal');
+    const cancelBtn = document.getElementById('cancelEditTimeBtn');
+    const form = document.getElementById('editTimeForm');
+    
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeEditTimeModal);
+    }
+    
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeEditTimeModal);
+    }
+    
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeEditTimeModal();
+        });
+    }
+    
+    if (form) {
+        form.addEventListener('submit', handleEditTimeSubmit);
+    }
+}
+
+function openEditTimeModal(entryId) {
+    const entry = timeHistory.find(e => e.id === entryId);
+    if (!entry) return;
+    
+    editingTimeEntryId = entryId;
+    
+    document.getElementById('editTimeSkill').value = entry.skillName;
+    document.getElementById('editTimeHours').value = entry.hours;
+    
+    // Format date for input (YYYY-MM-DD)
+    const dateStr = entry.date.toISOString().split('T')[0];
+    document.getElementById('editTimeDate').value = dateStr;
+    
+    document.getElementById('editTimeModal').classList.add('active');
+}
+
+function closeEditTimeModal() {
+    document.getElementById('editTimeModal').classList.remove('active');
+    editingTimeEntryId = null;
+}
+
+function handleEditTimeSubmit(e) {
+    e.preventDefault();
+    
+    const hours = parseFloat(document.getElementById('editTimeHours').value);
+    const dateStr = document.getElementById('editTimeDate').value;
+    
+    if (!hours || hours <= 0) {
+        showSettingsMessage('Please enter a valid number of hours', 'error');
+        return;
+    }
+    
+    const entry = timeHistory.find(e => e.id === editingTimeEntryId);
+    if (entry) {
+        // Calculate the difference to update skill hours
+        const hoursDiff = hours - entry.hours;
+        const skill = skills.find(s => s.id === entry.skillId);
+        
+        if (skill) {
+            skill.hours = Math.max(0, Math.min(skill.hours + hoursDiff, 10000));
+            renderSkills();
+            updateStats();
+        }
+        
+        // Update entry
+        entry.hours = hours;
+        entry.date = new Date(dateStr);
+        entry.timestamp = entry.date.getTime();
+        
+        // Re-sort
+        timeHistory.sort((a, b) => b.timestamp - a.timestamp);
+        
+        // Re-render
+        const currentTimeframe = document.getElementById('historyTimeframe').value;
+        const days = currentTimeframe === 'all' ? 'all' : parseInt(currentTimeframe);
+        renderTimeHistory(days);
+        
+        showSettingsMessage('Time entry updated successfully!');
+    }
+    
+    closeEditTimeModal();
+}
+
+let deletingTimeEntryId = null;
+
+function deleteTimeEntry(entryId) {
+    const entry = timeHistory.find(e => e.id === entryId);
+    if (!entry) return;
+    
+    // Show custom confirmation modal
+    deletingTimeEntryId = entryId;
+    const dateStr = entry.date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric', 
+        year: 'numeric' 
+    });
+    
+    document.getElementById('deleteTimeEntryDetails').innerHTML = `
+        <div class="delete-time-entry-info">
+            <div><strong>Skill:</strong> ${entry.skillName}</div>
+            <div><strong>Time:</strong> ${entry.hours}h</div>
+            <div><strong>Date:</strong> ${dateStr}</div>
+        </div>
+    `;
+    
+    document.getElementById('deleteTimeEntryModal').classList.add('active');
+}
+
+function confirmDeleteTimeEntry() {
+    if (!deletingTimeEntryId) return;
+    
+    const entry = timeHistory.find(e => e.id === deletingTimeEntryId);
+    if (!entry) return;
+    
+    // Update skill hours
+    const skill = skills.find(s => s.id === entry.skillId);
+    if (skill) {
+        skill.hours = Math.max(0, skill.hours - entry.hours);
+        renderSkills();
+        updateStats();
+    }
+    
+    // Remove entry
+    timeHistory = timeHistory.filter(e => e.id !== deletingTimeEntryId);
+    
+    // Re-render
+    const currentTimeframe = document.getElementById('historyTimeframe').value;
+    const days = currentTimeframe === 'all' ? 'all' : parseInt(currentTimeframe);
+    renderTimeHistory(days);
+    
+    showSettingsMessage('Time entry deleted successfully!');
+    
+    closeDeleteTimeEntryModal();
+}
+
+function closeDeleteTimeEntryModal() {
+    document.getElementById('deleteTimeEntryModal').classList.remove('active');
+    deletingTimeEntryId = null;
 }
