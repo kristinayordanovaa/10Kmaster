@@ -52,14 +52,24 @@ let timerSeconds = 0;
 let hoursThisWeek = 12.4;
 
 // Settings data
-let selectedAvatar = 'DU';
+let selectedAvatar = 'img/user avatars/Avatar1.png';
 const availableAvatars = [
-    '👨', '👩', '🧑', '👨‍💼', '👩‍💼', '🧑‍💼',
-    '👨‍🎓', '👩‍🎓', '🧑‍🎓', '👨‍🎨', '👩‍🎨', '🧑‍🎨',
-    '👨‍💻', '👩‍💻', '🧑‍💻', '👨‍🔬', '👩‍🔬', '🧑‍🔬',
-    '🦸‍♂️', '🦸‍♀️', '🦸', '🧙‍♂️', '🧙‍♀️', '🧙',
-    '🐶', '🐱', '🐭', '🐹', '🐰', '🦊',
-    '🐻', '🐼', '🐨', '🐯', '🦁', '🐮'
+    'img/user avatars/Avatar1.png',
+    'img/user avatars/Avatar2.png',
+    'img/user avatars/Avatar3.png',
+    'img/user avatars/Avatar4.png',
+    'img/user avatars/Avatar5.png',
+    'img/user avatars/Avatar6.png',
+    'img/user avatars/Avatar7.png',
+    'img/user avatars/Avatar8.png',
+    'img/user avatars/Avatar9.png',
+    'img/user avatars/Avatar10.png',
+    'img/user avatars/Avatar11.png',
+    'img/user avatars/Avatar12.png',
+    'img/user avatars/Avatar13.png',
+    'img/user avatars/Avatar14.png',
+    'img/user avatars/Avatar15.png',
+    'img/user avatars/Avatar16.png'
 ];
 
 // Achievements data
@@ -688,7 +698,7 @@ function renderAvatarGrid() {
         const isSelected = avatar === selectedAvatar;
         return `
             <div class="avatar-option ${isSelected ? 'selected' : ''}" data-avatar="${avatar}">
-                ${avatar}
+                <img src="${avatar}" alt="Avatar" class="avatar-option-img">
             </div>
         `;
     }).join('');
@@ -708,7 +718,7 @@ function selectAvatar(avatar) {
     // Update sidebar avatar
     const sidebarAvatar = document.querySelector('.demo-avatar');
     if (sidebarAvatar) {
-        sidebarAvatar.textContent = avatar;
+        sidebarAvatar.innerHTML = `<img src="${avatar}" alt="Avatar" class="demo-avatar-img">`;
     }
     
     // Update avatar grid

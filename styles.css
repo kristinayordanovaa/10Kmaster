@@ -2100,17 +2100,24 @@ html {
 
 /* Reviews Page */
 .reviews-header {
-    padding: 120px 0 60px;
+    padding: 140px 0 80px;
     background: #1200FF;
     background: linear-gradient(16deg, rgba(18, 0, 255, 1) 0%, rgba(252, 187, 248, 1) 63%);
     text-align: center;
+    color: white;
 }
 
 .reviews-header h1 {
     font-size: 56px;
     font-weight: 800;
     margin-bottom: 16px;
-    color: var(--text-primary);
+    color: white;
+}
+
+.reviews-header .section-subtitle {
+    font-size: 20px;
+    opacity: 0.95;
+    color: white;
 }
 
 .reviews-section {
@@ -2206,7 +2213,7 @@ html {
 
 /* Demo Page */
 .demo-banner {
-    padding: 120px 0 40px;
+    padding: 140px 0 80px;
     background: #1200FF;
     background: linear-gradient(16deg, rgba(18, 0, 255, 1) 0%, rgba(252, 187, 248, 1) 63%);
     text-align: center;
@@ -2224,14 +2231,16 @@ html {
 }
 
 .demo-banner h1 {
-    font-size: 48px;
+    font-size: 56px;
     font-weight: 800;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
 }
 
 .demo-banner p {
-    font-size: 18px;
-    opacity: 0.9;
+    font-size: 20px;
+    opacity: 0.95;
+    max-width: 700px;
+    margin: 0 auto;
 }
 
 .demo-section {
@@ -2276,6 +2285,8 @@ html {
     justify-content: center;
     font-weight: 700;
     font-size: 16px;
+    overflow: hidden;
+    flex-shrink: 0;
 }
 
 .demo-username {
@@ -2978,6 +2989,13 @@ html {
     cursor: pointer;
     transition: all 0.2s ease;
     border: 3px solid transparent;
+    overflow: hidden;
+}
+
+.avatar-option-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .avatar-option:hover {
@@ -2989,6 +3007,14 @@ html {
     border-color: var(--primary);
     background: #e0e7ff;
     box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+/* Demo Avatar Image */
+.demo-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
 }
 
 /* Subscription Plan */
