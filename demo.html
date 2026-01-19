@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Demo - 10K to Mastery</title>
+    <meta name="description" content="Try 10K to Mastery - Interactive demo of skill tracking features">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <div class="logo">
+                    <a href="index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center;">
+                        <span class="logo-icon">⏱️</span>
+                        <span class="logo-text">10K to Mastery</span>
+                    </a>
+                </div>
+                <div class="nav-links">
+                    <a href="index.html#features">Features</a>
+                    <a href="index.html#how-it-works">How It Works</a>
+                    <a href="reviews.html">User Reviews</a>
+                    <a href="index.html#pricing">Pricing</a>
+                </div>
+                <div class="nav-cta">
+                    <button class="btn btn-primary">Login</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Demo Banner -->
+    <section class="demo-banner">
+        <div class="container">
+            <h1>Try 10K to Mastery</h1>
+            <p>Explore all features. Add, edit, or delete skills. No signup required!</p>
+        </div>
+    </section>
+
+    <!-- Demo Dashboard -->
+    <section class="demo-section">
+        <div class="container">
+            <div class="demo-container">
+                <!-- Sidebar -->
+                <aside class="demo-sidebar">
+                    <div class="demo-user">
+                        <div class="demo-avatar">DU</div>
+                        <div class="demo-user-info">
+                            <div class="demo-username">Demo User</div>
+                            <div class="demo-user-meta">6 Active Skills</div>
+                        </div>
+                    </div>
+                    <nav class="demo-nav">
+                        <a href="#" class="demo-nav-item active">
+                            <span>📊</span> Dashboard
+                        </a>
+                        <a href="#" class="demo-nav-item">
+                            <span>⏱️</span> Track Time
+                        </a>
+                        <a href="#" class="demo-nav-item">
+                            <span>📈</span> Analytics
+                        </a>
+                        <a href="#" class="demo-nav-item">
+                            <span>🎯</span> Goals
+                        </a>
+                        <a href="#" class="demo-nav-item">
+                            <span>⚙️</span> Settings
+                        </a>
+                    </nav>
+                </aside>
+
+                <!-- Main Content -->
+                <main class="demo-main">
+                    <!-- Stats Overview -->
+                    <div class="demo-stats">
+                        <div class="demo-stat-card">
+                            <div class="demo-stat-icon">⏱️</div>
+                            <div class="demo-stat-info">
+                                <div class="demo-stat-value" id="totalHours">0</div>
+                                <div class="demo-stat-label">Total Hours</div>
+                            </div>
+                        </div>
+                        <div class="demo-stat-card">
+                            <div class="demo-stat-icon">🎯</div>
+                            <div class="demo-stat-info">
+                                <div class="demo-stat-value" id="skillCount">6</div>
+                                <div class="demo-stat-label">Active Skills</div>
+                            </div>
+                        </div>
+                        <div class="demo-stat-card">
+                            <div class="demo-stat-icon">🔥</div>
+                            <div class="demo-stat-info">
+                                <div class="demo-stat-value">47</div>
+                                <div class="demo-stat-label">Day Streak</div>
+                            </div>
+                        </div>
+                        <div class="demo-stat-card">
+                            <div class="demo-stat-icon">📅</div>
+                            <div class="demo-stat-info">
+                                <div class="demo-stat-value">12.5</div>
+                                <div class="demo-stat-label">Hrs This Week</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Skills Header -->
+                    <div class="demo-header">
+                        <h2>Your Skills</h2>
+                        <button class="btn btn-primary" id="addSkillBtn">
+                            <span>+</span> Add New Skill
+                        </button>
+                    </div>
+
+                    <!-- Skills Grid -->
+                    <div class="demo-skills-grid" id="skillsGrid">
+                        <!-- Skills will be dynamically inserted here -->
+                    </div>
+                </main>
+            </div>
+        </div>
+    </section>
+
+    <!-- Add/Edit Skill Modal -->
+    <div id="skillModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Add New Skill</h3>
+                <button class="modal-close" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="skillForm">
+                    <div class="form-group">
+                        <label for="skillName">Skill Name</label>
+                        <input type="text" id="skillName" class="form-input" placeholder="e.g., Piano, Spanish, Coding" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="skillCategory">Category</label>
+                        <select id="skillCategory" class="form-input">
+                            <option value="🎨">🎨 Creative</option>
+                            <option value="💻">💻 Technology</option>
+                            <option value="🎵">🎵 Music</option>
+                            <option value="🏃">🏃 Sports</option>
+                            <option value="📚">📚 Language</option>
+                            <option value="🔬">🔬 Science</option>
+                            <option value="🎯">🎯 Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="skillHours">Current Hours</label>
+                        <input type="number" id="skillHours" class="form-input" placeholder="0" min="0" max="10000">
+                    </div>
+                    <div class="form-group">
+                        <label for="skillColor">Progress Color</label>
+                        <select id="skillColor" class="form-input">
+                            <option value="#6366f1">Purple</option>
+                            <option value="#ec4899">Pink</option>
+                            <option value="#10b981">Green</option>
+                            <option value="#f59e0b">Orange</option>
+                            <option value="#3b82f6">Blue</option>
+                            <option value="#8b5cf6">Violet</option>
+                        </select>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-outline" id="cancelBtn">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="saveBtn">Save Skill</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h3>Delete Skill</h3>
+                <button class="modal-close" id="closeDeleteModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong id="deleteSkillName"></strong>? This action cannot be undone.</p>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" id="cancelDeleteBtn">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete Skill</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Product</h4>
+                        <a href="index.html#features">Features</a>
+                        <a href="index.html#pricing">Pricing</a>
+                        <a href="help-center.html">Help Center</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Company</h4>
+                        <a href="about.html">About</a>
+                        <a href="blog.html">Blog</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Resources</h4>
+                        <a href="help-center.html">Help Center</a>
+                        <a href="#">Community</a>
+                        <a href="reviews.html">User Reviews</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Legal</h4>
+                        <a href="privacy.html">Privacy</a>
+                        <a href="terms.html">Terms</a>
+                        <a href="cookies.html">Cookies</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 10K to Mastery. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="demo.js"></script>
+</body>
+</html>
