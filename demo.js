@@ -196,7 +196,6 @@ function createSkillCard(skill) {
             
             ${isTimerActive ? `
                 <div class="skill-timer-display">
-                    <div class="timer-icon">⏱️</div>
                     <div class="timer-time" id="timer-${skill.id}">00:00:00</div>
                 </div>
             ` : ''}
@@ -214,7 +213,7 @@ function createSkillCard(skill) {
             
             <div class="skill-buttons">
                 <button class="btn ${isTimerActive ? 'btn-danger' : 'btn-primary'} btn-sm skill-timer-btn" data-id="${skill.id}">
-                    <span>${isTimerActive ? '⏹' : '▶️'}</span> ${isTimerActive ? 'Stop Timer' : 'Start Timer'}
+                    <span>${isTimerActive ? '⏹' : '▶'}</span> ${isTimerActive ? 'Stop Timer' : 'Start Timer'}
                 </button>
                 <button class="btn btn-outline btn-sm skill-add-time-btn" data-id="${skill.id}" data-minutes="30">
                     <span>+</span> 30m
@@ -423,17 +422,18 @@ function toggleTimer(id) {
     if (activeTimer === id) {
         stopTimer();
     } else {
+        // Check if another timer is already running
+        if (activeTimer && activeTimer !== id) {
+            const activeSkill = skills.find(s => s.id === activeTimer);
+            showNotification(`Timer is already running for ${activeSkill.name}. Stop it first!`, 'warning');
+            return;
+        }
         startTimer(id);
     }
 }
 
 // Start timer
 function startTimer(id) {
-    // Stop any existing timer
-    if (activeTimer) {
-        stopTimer();
-    }
-    
     activeTimer = id;
     timerSeconds = 0;
     
@@ -484,10 +484,10 @@ function updateTimerDisplay(id) {
 }
 
 // Show notification
-function showNotification(message) {
+function showNotification(message, type = 'success') {
     // Create notification element
     const notification = document.createElement('div');
-    notification.className = 'timer-notification';
+    notification.className = `timer-notification ${type === 'warning' ? 'notification-warning' : ''}`;
     notification.textContent = message;
     document.body.appendChild(notification);
     

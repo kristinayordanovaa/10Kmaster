@@ -953,6 +953,70 @@ html {
     margin-bottom: 16px;
 }
 
+.about-mission-story {
+    padding: 0 !important;
+}
+
+.about-content-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 500px;
+}
+
+.about-content-split .about-text {
+    display: flex;
+    align-items: center;
+    padding: 80px 0;
+    background: rgba(252, 187, 248, 0.63);
+}
+
+.about-content-split .about-text:first-child .container-half {
+    margin-left: auto;
+    margin-right: 80px;
+}
+
+.about-content-split .about-text:last-child .container-half {
+    margin-left: 80px;
+    margin-right: auto;
+}
+
+.container-half {
+    max-width: 600px;
+    padding: 0 40px;
+}
+
+.about-text-gradient h2,
+.about-text-gradient p {
+    color: var(--text-primary);
+}
+
+.about-story-centered {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.about-story-centered h2 {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: var(--text-primary);
+}
+
+.about-story-centered p {
+    font-size: 18px;
+    line-height: 1.8;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+}
+
+.about-mission-img {
+    width: 100%;
+    height: auto;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
 .about-stats-card {
     background: white;
     padding: 40px;
@@ -1032,8 +1096,19 @@ html {
 }
 
 .value-icon {
-    font-size: 48px;
-    margin-bottom: 16px;
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.value-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: brightness(0) saturate(100%) invert(46%) sepia(84%) saturate(2519%) hue-rotate(227deg) brightness(99%) contrast(92%);
 }
 
 .value-card h3 {
@@ -1071,8 +1146,18 @@ html {
 }
 
 .team-member-avatar {
-    font-size: 64px;
-    margin-bottom: 16px;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #f3f4f6;
+}
+
+.team-member-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .team-member h3 {
@@ -2766,6 +2851,11 @@ html {
     font-weight: 700;
 }
 
+.timer-notification.notification-warning::before {
+    content: '⚠';
+    background: #f59e0b;
+}
+
 /* Section Content Switching */
 .demo-section-content {
     display: none;
@@ -2857,17 +2947,23 @@ html {
     display: flex;
     gap: 4px;
     flex: 1;
+    width: 100%;
 }
 
 .heatmap-week {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    flex: 1;
 }
 
 .heatmap-cell {
-    width: 12px;
-    height: 12px;
+    width: 100%;
+    aspect-ratio: 1;
+    min-width: 8px;
+    min-height: 8px;
+    max-width: 15px;
+    max-height: 15px;
     background: #ebedf0;
     border-radius: 2px;
     cursor: pointer;
