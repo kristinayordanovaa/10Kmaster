@@ -29,7 +29,7 @@
                     <a href="index.html#pricing">Pricing</a>
                 </div>
                 <div class="nav-cta">
-                    <button class="btn btn-primary">Login</button>
+                    <a href="login.html" class="btn btn-primary" style="text-decoration: none;">Login</a>
                 </div>
             </div>
         </div>
@@ -90,65 +90,94 @@
         </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
     <script src="script.js"></script>
-    <script src="blog-loader.js"></script>
     <script>
-        // Get post slug from URL parameter
-        const urlParams = new URLSearchParams(window.location.search);
-        const postSlug = urlParams.get('post');
-
-        if (postSlug) {
-            // Find post data
-            const postData = blogPosts.find(post => post.slug === postSlug);
+        // Load individual blog post from Supabase
+        async function loadBlogPost() {
+            console.log('[Blog Post] Starting to load post...');
             
-            // Set header image if available - check if image file exists first
-            if (postData && postData.image) {
-                // Try to load the image
-                const img = new Image();
-                img.onload = function() {
-                    // Image exists, set it as background
-                    document.getElementById('post-header-image').style.backgroundImage = `url('${postData.image}')`;
-                };
-                img.onerror = function() {
-                    // Image doesn't exist, use gradient background
-                    document.getElementById('post-header-image').style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                };
-                img.src = postData.image;
-            } else {
-                // No image specified, use gradient background
-                document.getElementById('post-header-image').style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            // Get post ID from URL hash (after #)
+            const postId = window.location.hash.substring(1); // Remove the # symbol
+            
+            console.log('[Blog Post] URL hash:', window.location.hash);
+            console.log('[Blog Post] Post ID:', postId);
+
+            if (!postId) {
+                console.warn('[Blog Post] No post ID provided');
+                document.getElementById('post-title').textContent = 'No Post Selected';
+                document.getElementById('post-content').innerHTML = '<p>Please select a blog post from the <a href="blog.html">blog page</a>.</p>';
+                return;
             }
             
-            // Fetch and render the markdown file
-            fetch(`blog/${postSlug}.md`)
-                .then(response => {
-                    if (!response.ok) throw new Error('Post not found');
-                    return response.text();
-                })
-                .then(markdown => {
-                    // Remove frontmatter if present
-                    const frontmatterRegex = /^---\s*\n[\s\S]*?\n---\s*\n/;
-                    const content = markdown.replace(frontmatterRegex, '');
-                    
-                    // Extract title from first h1
-                    const titleMatch = content.match(/^#\s+(.+)$/m);
-                    const title = titleMatch ? titleMatch[1] : 'Blog Post';
-                    
-                    // Set title
-                    document.getElementById('post-title').textContent = title;
-                    document.title = `${title} - 10K to Mastery`;
-                    
-                    // Convert markdown to HTML
-                    const htmlContent = marked.marked(content);
-                    document.getElementById('post-content').innerHTML = htmlContent;
-                })
-                .catch(error => {
-                    document.getElementById('post-title').textContent = 'Post Not Found';
-                    document.getElementById('post-content').innerHTML = '<p>Sorry, the blog post you\'re looking for doesn\'t exist.</p>';
-                });
+            // Wait for Supabase client to be initialized
+            let attempts = 0;
+            while (!window.supabaseClient && attempts < 100) {
+                await new Promise(resolve => setTimeout(resolve, 50));
+                attempts++;
+            }
+            
+            if (!window.supabaseClient) {
+                console.error('[Blog Post] Supabase client not initialized after 5 seconds');
+                document.getElementById('post-title').textContent = 'Error Loading Post';
+                document.getElementById('post-content').innerHTML = '<p>Failed to connect to database. Please refresh the page.</p>';
+                return;
+            }
+            
+            console.log('[Blog Post] Supabase client ready, fetching post...');
+
+            try {
+                // Fetch post from Supabase
+                const { data: post, error } = await window.supabaseClient
+                    .from('blog_posts')
+                    .select('*')
+                    .eq('id', postId)
+                    .single();
+
+                if (error) {
+                    console.error('[Blog Post] Database error:', error);
+                    throw error;
+                }
+
+                if (!post) {
+                    console.warn('[Blog Post] Post not found');
+                    throw new Error('Post not found');
+                }
+                
+                console.log('[Blog Post] Successfully loaded:', post.title);
+
+                // Set header image
+                const headerElement = document.getElementById('post-header-image');
+                if (post.header_image_url) {
+                    headerElement.style.backgroundImage = `url('${post.header_image_url}')`;
+                } else {
+                    headerElement.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                }
+
+                // Set title
+                document.getElementById('post-title').textContent = post.title;
+                document.title = `${post.title} - 10K to Mastery`;
+
+                // Convert markdown content to HTML
+                const htmlContent = marked.marked(post.content);
+                document.getElementById('post-content').innerHTML = htmlContent;
+                
+                console.log('[Blog Post] Rendering complete');
+
+            } catch (error) {
+                console.error('[Blog Post] Error loading blog post:', error);
+                document.getElementById('post-title').textContent = 'Post Not Found';
+                document.getElementById('post-content').innerHTML = '<p>Sorry, the blog post you\'re looking for doesn\'t exist or is not published yet.</p><p><a href="blog.html">← Back to Blog</a></p>';
+            }
+        }
+        
+        // Call loadBlogPost when DOM is ready
+        console.log('[Blog Post] Script loaded, document ready state:', document.readyState);
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadBlogPost);
         } else {
-            document.getElementById('post-title').textContent = 'No Post Selected';
-            document.getElementById('post-content').innerHTML = '<p>Please select a blog post from the <a href="blog.html">blog page</a>.</p>';
+            loadBlogPost();
         }
     </script>
 </body>

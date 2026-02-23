@@ -127,6 +127,199 @@
             border-radius: 8px;
             margin-bottom: 20px;
         }
+        .admin-tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .admin-tab {
+            padding: 12px 24px;
+            background: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            color: #666;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .admin-tab:hover {
+            background: #f5f5f5;
+        }
+        .admin-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .admin-content {
+            display: none;
+        }
+        .admin-content.active {
+            display: block;
+        }
+        .add-blog-button {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .add-blog-button:hover {
+            opacity: 0.9;
+        }
+        .blog-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .blog-table th {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 2px solid #e0e0e0;
+            font-weight: 600;
+            color: #333;
+        }
+        .blog-table td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .blog-table tr:hover {
+            background: #f9f9f9;
+        }
+        .blog-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .blog-status.published {
+            background: #10b981;
+            color: white;
+        }
+        .blog-status.draft {
+            background: #f59e0b;
+            color: white;
+        }
+        .blog-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .blog-action-button {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .blog-action-view {
+            background: #3b82f6;
+            color: white;
+        }
+        .blog-action-edit {
+            background: #f59e0b;
+            color: white;
+        }
+        .blog-action-delete {
+            background: #e74c3c;
+            color: white;
+        }
+        .blog-action-button:hover {
+            opacity: 0.8;
+        }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+        }
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h2 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 32px;
+            cursor: pointer;
+            color: #999;
+            line-height: 1;
+        }
+        .modal-body {
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="file"],
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+        .form-group textarea {
+            resize: vertical;
+        }
+        #blog-editor-toolbar {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+        #blog-editor-toolbar button {
+            padding: 6px 12px;
+            background: #f5f5f5;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        #blog-editor-toolbar button:hover {
+            background: #e0e0e0;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -140,42 +333,151 @@
 
         <div id="error-message" class="error-message" style="display: none;"></div>
 
-        <div class="users-table-container">
-            <div class="users-table-header">
-                <div class="users-table-title">
-                    All Users <span class="users-count" id="users-count">(0)</span>
+        <!-- Admin Tabs -->
+        <div class="admin-tabs">
+            <button class="admin-tab active" onclick="switchTab('users')">Users</button>
+            <button class="admin-tab" onclick="switchTab('blog')">Blog Posts</button>
+        </div>
+
+        <!-- Users Content -->
+        <div id="users-content" class="admin-content active">
+            <div class="users-table-container">
+                <div class="users-table-header">
+                    <div class="users-table-title">
+                        All Users <span class="users-count" id="users-count">(0)</span>
+                    </div>
+                </div>
+
+                <div id="loading-state" class="loading">
+                    Loading users...
+                </div>
+
+                <div id="users-table-wrapper" style="display: none;">
+                    <table class="users-table">
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Username</th>
+                                <th>Role</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="empty-state" class="empty-state" style="display: none;">
+                    No users found
                 </div>
             </div>
+        </div>
 
-            <div id="loading-state" class="loading">
-                Loading users...
+        <!-- Blog Content -->
+        <div id="blog-content" class="admin-content">
+            <div class="users-table-container">
+                <div class="users-table-header">
+                    <div class="users-table-title">
+                        Blog Posts <span class="users-count" id="blog-count">(0)</span>
+                    </div>
+                    <button class="add-blog-button" onclick="openBlogEditor()">+ Add Article</button>
+                </div>
+
+                <div id="blog-loading-state" class="loading">
+                    Loading blog posts...
+                </div>
+
+                <div id="blog-table-wrapper" style="display: none;">
+                    <table class="blog-table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Status</th>
+                                <th>Published</th>
+                                <th>Updated</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="blog-table-body">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="blog-empty-state" class="empty-state" style="display: none;">
+                    No blog posts found
+                </div>
             </div>
+        </div>
+    </div>
 
-            <div id="users-table-wrapper" style="display: none;">
-                <table class="users-table">
-                    <thead>
-                        <tr>
-                            <th>Email</th>
-                            <th>Username</th>
-                            <th>Role</th>
-                            <th>Created</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="users-table-body">
-                    </tbody>
-                </table>
+    <!-- Blog Editor Modal -->
+    <div id="blog-editor-modal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h2 id="blog-editor-title">Add Blog Post</h2>
+                <button class="modal-close" onclick="closeBlogEditor()">&times;</button>
             </div>
+            <div class="modal-body">
+                <form id="blog-form">
+                    <input type="hidden" id="blog-id">
+                    
+                    <div class="form-group">
+                        <label for="blog-title-input">Title</label>
+                        <input type="text" id="blog-title-input" required placeholder="Enter post title">
+                    </div>
 
-            <div id="empty-state" class="empty-state" style="display: none;">
-                No users found
+                    <div class="form-group">
+                        <label for="blog-excerpt">Excerpt (optional)</label>
+                        <textarea id="blog-excerpt" rows="2" placeholder="Short description for preview"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="blog-header-image">Header Image</label>
+                        <input type="file" id="blog-header-image" accept="image/*">
+                        <div id="blog-current-image" style="margin-top: 10px; display: none;">
+                            <img id="blog-current-image-preview" style="max-width: 200px; border-radius: 8px;">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="blog-content-input">Content</label>
+                        <div id="blog-editor-toolbar" style="margin-bottom: 8px;">
+                            <button type="button" onclick="formatText('bold')" title="Bold"><b>B</b></button>
+                            <button type="button" onclick="formatText('italic')" title="Italic"><i>I</i></button>
+                            <button type="button" onclick="formatText('heading')" title="Heading"><b>H</b></button>
+                            <button type="button" onclick="formatText('quote')" title="Quote">❝❞</button>
+                            <button type="button" onclick="formatText('ul')" title="Bullet List">• List</button>
+                            <button type="button" onclick="formatText('ol')" title="Numbered List">1. List</button>
+                            <button type="button" onclick="formatText('link')" title="Link">🔗</button>
+                        </div>
+                        <textarea id="blog-content-input" rows="15" required placeholder="Write your article content here..."></textarea>
+                        <div style="margin-top: 8px; color: #666; font-size: 13px;">
+                            Supports Markdown formatting
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="blog-published">
+                            Publish immediately
+                        </label>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                        <button type="button" onclick="closeBlogEditor()" class="btn" style="background: #ccc;">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Post</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="supabase-config.js"></script>
     <script src="auth.js"></script>
     <script src="admin.js"></script>
+    <script src="blog-admin.js"></script>
 </body>
 </html>

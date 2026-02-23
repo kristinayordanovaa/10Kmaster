@@ -1991,6 +1991,13 @@ html {
     flex: 1;
 }
 
+.blog-card-date {
+    font-size: 14px;
+    color: #9ca3af;
+    margin-top: 16px;
+    font-weight: 500;
+}
+
 .read-time {
     font-size: 14px;
     color: var(--text-secondary);
