@@ -1031,10 +1031,15 @@ function selectAvatar(avatar) {
         sidebarAvatar.innerHTML = `<img src="${avatar}" alt="Avatar" class="demo-avatar-img">`;
     }
     
-    // Update avatar grid
+    // Update avatar grid selection (only for preset avatars)
     document.querySelectorAll('.avatar-option').forEach(option => {
         option.classList.toggle('selected', option.dataset.avatar === avatar);
     });
+    
+    // Save to database if authenticated
+    if (typeof updateProfileInDB === 'function') {
+        updateProfileInDB({ avatar_url: avatar });
+    }
     
     // Show success message (simple approach)
     showSettingsMessage('Avatar updated successfully!');

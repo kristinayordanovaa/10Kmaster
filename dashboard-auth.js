@@ -35,6 +35,9 @@ async function initializeDashboard() {
     
     // Load user's time history
     await loadTimeHistory();
+    
+    // Initialize avatar upload
+    initAvatarUpload();
 }
 
 // Handle nav auth button click
@@ -270,4 +273,118 @@ async function updateProfileInDB(updates) {
         console.error('Error updating profile:', error);
         return false;
     }
+}
+
+// Initialize avatar upload functionality
+function initAvatarUpload() {
+    const uploadInput = document.getElementById('avatarUpload');
+    if (!uploadInput) return;
+    
+    uploadInput.addEventListener('change', handleAvatarUpload);
+}
+
+// Handle avatar upload
+async function handleAvatarUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+        if (typeof showSettingsMessage === 'function') {
+            showSettingsMessage('Please upload a valid image file (JPG, PNG, GIF, or WEBP)', 'error');
+        }
+        return;
+    }
+    
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+        if (typeof showSettingsMessage === 'function') {
+            showSettingsMessage('Image size must be less than 5MB', 'error');
+        }
+        return;
+    }
+    
+    // Show progress
+    const progressDiv = document.getElementById('uploadProgress');
+    const progressFill = document.getElementById('uploadProgressFill');
+    const progressText = document.getElementById('uploadProgressText');
+    
+    if (progressDiv) progressDiv.style.display = 'block';
+    if (progressFill) progressFill.style.width = '0%';
+    if (progressText) progressText.textContent = 'Uploading...';
+    
+    try {
+        // Delete old avatar if it exists and is a custom upload
+        if (currentProfile && currentProfile.avatar_url && currentProfile.avatar_url.includes('supabase')) {
+            const oldPath = currentProfile.avatar_url.split('/').pop();
+            await window.supabaseClient.storage
+                .from('avatars')
+                .remove([`${currentUser.id}/${oldPath}`]);
+        }
+        
+        // Create unique filename
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const filePath = `${currentUser.id}/${fileName}`;
+        
+        // Upload to Supabase Storage
+        const { data: uploadData, error: uploadError } = await window.supabaseClient.storage
+            .from('avatars')
+            .upload(filePath, file, {
+                cacheControl: '3600',
+                upsert: false
+            });
+        
+        if (uploadError) throw uploadError;
+        
+        // Get public URL
+        const { data: urlData } = window.supabaseClient.storage
+            .from('avatars')
+            .getPublicUrl(filePath);
+        
+        const avatarUrl = urlData.publicUrl;
+        
+        // Update progress
+        if (progressFill) progressFill.style.width = '90%';
+        if (progressText) progressText.textContent = 'Saving...';
+        
+        // Update profile in database
+        const success = await updateProfileInDB({ avatar_url: avatarUrl });
+        
+        if (success) {
+            // Update UI
+            if (typeof selectAvatar === 'function') {
+                selectAvatar(avatarUrl);
+            }
+            
+            // Update progress
+            if (progressFill) progressFill.style.width = '100%';
+            if (progressText) progressText.textContent = 'Upload complete!';
+            
+            // Hide progress after delay
+            setTimeout(() => {
+                if (progressDiv) progressDiv.style.display = 'none';
+            }, 2000);
+            
+            if (typeof showSettingsMessage === 'function') {
+                showSettingsMessage('Avatar uploaded successfully!');
+            }
+        } else {
+            throw new Error('Failed to update profile');
+        }
+        
+    } catch (error) {
+        console.error('Error uploading avatar:', error);
+        
+        // Hide progress
+        if (progressDiv) progressDiv.style.display = 'none';
+        
+        if (typeof showSettingsMessage === 'function') {
+            showSettingsMessage('Failed to upload avatar. Please try again.', 'error');
+        }
+    }
+    
+    // Reset input
+    event.target.value = '';
 }
