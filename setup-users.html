@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup Users - 10K to Mastery</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            margin-top: 0;
+            color: #333;
+        }
+        .setup-button {
+            width: 100%;
+            padding: 14px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        .setup-button:hover {
+            background: #5568d3;
+        }
+        .setup-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Setup Initial Users</h1>
+        <p>Click the buttons below to create the admin and demo users.</p>
+        
+        <div id="messages"></div>
+        
+        <button class="setup-button" onclick="testConnection()" style="background: #28a745;">Test Supabase Connection</button>
+        <div class="info message">
+            <strong>Test:</strong> Click to verify Supabase is connected properly
+        </div>
+        
+        <hr style="margin: 20px 0;">
+        
+        <button class="setup-button" onclick="createAdminUser()">Create Admin User</button>
+        <div class="info message">
+            <strong>Admin User:</strong><br>
+            Email: admin@admin.com<br>
+            Password: admin123<br>
+            Role: Admin (can view and delete all users)
+        </div>
+        
+        <button class="setup-button" onclick="createDemoUser()">Create Demo User</button>
+        <div class="info message">
+            <strong>Demo User:</strong><br>
+            Email: demo@demo.com<br>
+            Password: demo123<br>
+            Role: Regular User (can use tracking app)
+        </div>
+        
+        <hr style="margin: 30px 0;">
+        
+        <button class="setup-button" onclick="createBothUsers()">Create Both Users</button>
+        
+        <div style="margin-top: 30px;">
+            <a href="index.html">← Back to Home</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Initialize Supabase client directly
+        const SUPABASE_URL = 'https://ggbcxmyszuahivgjzmou.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdnYmN4bXlzenVhaGl2Z2p6bW91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MzIzNDMsImV4cCI6MjA4NzQwODM0M30.xNh9OnipOjkmd-QIqzUSUcEi-bbxz7IVmfoXEqc6TNs';
+        
+        // Create Supabase client (use let to avoid redeclaration errors during development)
+        let supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        console.log('Supabase client initialized:', supabaseClient);
+        console.log('Supabase auth available:', supabaseClient?.auth);
+        
+        function showMessage(message, type = 'info') {
+            const messagesDiv = document.getElementById('messages');
+            const messageEl = document.createElement('div');
+            messageEl.className = `message ${type}`;
+            messageEl.innerHTML = message;
+            messagesDiv.appendChild(messageEl);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                messageEl.remove();
+            }, 5000);
+        }
+
+        async function testConnection() {
+            const button = event.target;
+            button.disabled = true;
+            button.textContent = 'Testing...';
+            
+            try {
+                // Test connection by getting session
+                const { data, error } = await supabaseClient.auth.getSession();
+                
+                if (error) throw error;
+                
+                showMessage('✅ Supabase connection successful! Ready to create users.', 'success');
+                button.textContent = 'Connection OK ✓';
+                button.style.background = '#28a745';
+                
+            } catch (error) {
+                console.error('Connection test error:', error);
+                showMessage('❌ Connection failed: ' + error.message, 'error');
+                button.disabled = false;
+                button.textContent = 'Test Supabase Connection';
+            }
+        }
+
+        async function createAdminUser() {
+            const button = event.target;
+            button.disabled = true;
+            button.textContent = 'Creating...';
+            
+            try {
+                // Sign up admin user
+                const { data, error } = await supabaseClient.auth.signUp({
+                    email: 'admin@admin.com',
+                    password: 'admin123',
+                    options: {
+                        data: {
+                            username: 'Admin'
+                        }
+                    }
+                });
+                
+                if (error) throw error;
+                
+                // Wait for the trigger to create the profile
+                if (data.user) {
+                    showMessage('User created, setting admin permissions...', 'info');
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    
+                    // Try to update profile with retries
+                    let retries = 3;
+                    let success = false;
+                    
+                    while (retries > 0 && !success) {
+                        try {
+                            const { error: profileError } = await supabaseClient
+                                .from('profiles')
+                                .upsert({ 
+                                    id: data.user.id,
+                                    email: 'admin@admin.com',
+                                    username: 'Admin',
+                                    is_admin: true 
+                                }, {
+                                    onConflict: 'id'
+                                });
+                            
+                            if (!profileError) {
+                                success = true;
+                            } else {
+                                console.log('Retry attempt:', 4 - retries, profileError);
+                                retries--;
+                                if (retries > 0) {
+                                    await new Promise(resolve => setTimeout(resolve, 1000));
+                                } else {
+                                    throw profileError;
+                                }
+                            }
+                        } catch (err) {
+                            if (retries === 1) throw err;
+                            retries--;
+                            await new Promise(resolve => setTimeout(resolve, 1000));
+                        }
+                    }
+                }
+                
+                showMessage('✅ Admin user created successfully!', 'success');
+                button.textContent = 'Created ✓';
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('❌ Error: ' + error.message, 'error');
+                button.disabled = false;
+                button.textContent = 'Create Admin User';
+            }
+        }
+
+        async function createDemoUser() {
+            const button = event.target;
+            button.disabled = true;
+            button.textContent = 'Creating...';
+            
+            try {
+                // Sign up demo user
+                const { data, error } = await supabaseClient.auth.signUp({
+                    email: 'demo@demo.com',
+                    password: 'demo123',
+                    options: {
+                        data: {
+                            username: 'Demo User'
+                        }
+                    }
+                });
+                
+                if (error) throw error;
+                
+                // Profile will be created automatically by trigger
+                showMessage('✅ Demo user created successfully!', 'success');
+                button.textContent = 'Created ✓';
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('❌ Error: ' + error.message, 'error');
+                button.disabled = false;
+                button.textContent = 'Create Demo User';
+            }
+        }
+
+        async function createBothUsers() {
+            const button = event.target;
+            button.disabled = true;
+            button.textContent = 'Creating both users...';
+            
+            try {
+                // Create admin user
+                showMessage('Creating admin user...', 'info');
+                const { data: adminData, error: adminError } = await supabaseClient.auth.signUp({
+                    email: 'admin@admin.com',
+                    password: 'admin123',
+                    options: {
+                        data: {
+                            username: 'Admin'
+                        }
+                    }
+                });
+                
+                if (adminError) throw adminError;
+                
+                // Wait for profile creation and update admin status
+                if (adminData.user) {
+                    showMessage('Setting admin permissions...', 'info');
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    
+                    await supabaseClient
+                        .from('profiles')
+                        .upsert({ 
+                            id: adminData.user.id,
+                            email: 'admin@admin.com',
+                            username: 'Admin',
+                            is_admin: true 
+                        }, {
+                            onConflict: 'id'
+                        });
+                }
+                
+                // Wait a bit between user creations
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // Create demo user
+                showMessage('Creating demo user...', 'info');
+                const { data: demoData, error: demoError } = await supabaseClient.auth.signUp({
+                    email: 'demo@demo.com',
+                    password: 'demo123',
+                    options: {
+                        data: {
+                            username: 'Demo User'
+                        }
+                    }
+                });
+                
+                if (demoError) throw demoError;
+                
+                showMessage('✅ Both users created successfully!', 'success');
+                button.textContent = 'Both Created ✓';
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('❌ Error: ' + error.message, 'error');
+                button.disabled = false;
+                button.textContent = 'Create Both Users';
+            }
+        }
+    </script>
+</body>
+</html>

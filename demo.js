@@ -1,55 +1,12 @@
 // Demo Skills Data
-let skills = [
-    {
-        id: 1,
-        name: 'Piano',
-        category: '🎵',
-        hours: 3450,
-        color: '#6366f1'
-    },
-    {
-        id: 2,
-        name: 'Spanish',
-        category: '📚',
-        hours: 1820,
-        color: '#ec4899'
-    },
-    {
-        id: 3,
-        name: 'Web Development',
-        category: '💻',
-        hours: 5670,
-        color: '#10b981'
-    },
-    {
-        id: 4,
-        name: 'Digital Painting',
-        category: '🎨',
-        hours: 890,
-        color: '#f59e0b'
-    },
-    {
-        id: 5,
-        name: 'Rock Climbing',
-        category: '🏃',
-        hours: 2340,
-        color: '#3b82f6'
-    },
-    {
-        id: 6,
-        name: 'Photography',
-        category: '🎨',
-        hours: 4120,
-        color: '#8b5cf6'
-    }
-];
+let skills = [];
 
 let editingSkillId = null;
 let deletingSkillId = null;
 let activeTimer = null;
 let timerInterval = null;
 let timerSeconds = 0;
-let hoursThisWeek = 12.4;
+let hoursThisWeek = 0;
 
 // Time History
 let timeHistory = [];
@@ -78,27 +35,119 @@ const availableAvatars = [
 
 // Achievements data
 let userStats = {
-    totalHoursLogged: 18290,
-    currentStreak: 15,
-    longestStreak: 47,
-    skillsTracked: 6,
-    daysWithPractice: 342,
-    sessionsLogged: 156,
-    earlyBirdSessions: 8,
-    nightOwlSessions: 2,
-    weekendSessions: 45,
-    holidaySessions: 7,
-    monthsActive: 12,
-    maxDailyHours: 3,
-    maxWeeklyHours: 38
+    totalHoursLogged: 0,
+    currentStreak: 0,
+    longestStreak: 0,
+    skillsTracked: 0,
+    daysWithPractice: 0,
+    sessionsLogged: 0,
+    earlyBirdSessions: 0,
+    nightOwlSessions: 0,
+    weekendSessions: 0,
+    holidaySessions: 0,
+    monthsActive: 0,
+    maxDailyHours: 0,
+    maxWeeklyHours: 0
 };
+
+// Function to recalculate userStats from actual data
+function updateUserStats() {
+    // Total hours logged from skills
+    userStats.totalHoursLogged = skills.reduce((sum, skill) => sum + skill.hours, 0);
+    
+    // Skills tracked
+    userStats.skillsTracked = skills.length;
+    
+    // Sessions logged
+    userStats.sessionsLogged = timeHistory.length;
+    
+    // Calculate streak and other time-based stats if we have time history
+    if (timeHistory.length > 0) {
+        // Sort timeHistory by date
+        const sortedHistory = [...timeHistory].sort((a, b) => b.date - a.date);
+        
+        // Calculate current streak
+        let currentStreak = 0;
+        let checkDate = new Date();
+        checkDate.setHours(0, 0, 0, 0);
+        
+        for (let i = 0; i < 365; i++) {
+            const hasEntry = sortedHistory.some(entry => {
+                const entryDate = new Date(entry.date);
+                entryDate.setHours(0, 0, 0, 0);
+                return entryDate.getTime() === checkDate.getTime();
+            });
+            
+            if (hasEntry) {
+                currentStreak++;
+                checkDate.setDate(checkDate.getDate() - 1);
+            } else {
+                break;
+            }
+        }
+        userStats.currentStreak = currentStreak;
+        userStats.longestStreak = Math.max(userStats.longestStreak, currentStreak);
+        
+        // Calculate days with practice
+        const uniqueDays = new Set();
+        timeHistory.forEach(entry => {
+            const dateStr = new Date(entry.date).toDateString();
+            uniqueDays.add(dateStr);
+        });
+        userStats.daysWithPractice = uniqueDays.size;
+        
+        // Calculate early bird and night owl sessions
+        userStats.earlyBirdSessions = timeHistory.filter(entry => {
+            const hour = new Date(entry.date).getHours();
+            return hour < 7;
+        }).length;
+        
+        userStats.nightOwlSessions = timeHistory.filter(entry => {
+            const hour = new Date(entry.date).getHours();
+            return hour >= 22;
+        }).length;
+        
+        // Calculate weekend sessions
+        userStats.weekendSessions = timeHistory.filter(entry => {
+            const day = new Date(entry.date).getDay();
+            return day === 0 || day === 6;
+        }).length;
+        
+        // Calculate months active
+        const uniqueMonths = new Set();
+        timeHistory.forEach(entry => {
+            const date = new Date(entry.date);
+            uniqueMonths.add(`${date.getFullYear()}-${date.getMonth()}`);
+        });
+        userStats.monthsActive = uniqueMonths.size;
+        
+        // Calculate max daily hours
+        const dailyHours = new Map();
+        timeHistory.forEach(entry => {
+            const dateStr = new Date(entry.date).toDateString();
+            dailyHours.set(dateStr, (dailyHours.get(dateStr) || 0) + entry.hours);
+        });
+        userStats.maxDailyHours = dailyHours.size > 0 ? Math.max(...dailyHours.values()) : 0;
+        
+        // Calculate max weekly hours
+        const weeklyHours = new Map();
+        timeHistory.forEach(entry => {
+            const date = new Date(entry.date);
+            const weekStart = new Date(date);
+            weekStart.setDate(date.getDate() - date.getDay());
+            const weekKey = weekStart.toDateString();
+            weeklyHours.set(weekKey, (weeklyHours.get(weekKey) || 0) + entry.hours);
+        });
+        userStats.maxWeeklyHours = weeklyHours.size > 0 ? Math.max(...weeklyHours.values()) : 0;
+    }
+}
 
 const achievements = [
     // Milestones
     { id: 'first-steps', category: 'milestones', name: 'First Steps', description: 'Log your first hour', icon: '👣', requirement: 1, current: () => userStats.totalHoursLogged, max: 1 },
-    { id: 'century-club', category: 'milestones', name: 'Century Club', description: 'Reach 100 hours in any skill', icon: '💯', requirement: 100, current: () => Math.max(...skills.map(s => s.hours)), max: 100 },
-    { id: 'halfway-there', category: 'milestones', name: 'Halfway There', description: 'Reach 5,000 hours in any skill', icon: '🎯', requirement: 5000, current: () => Math.max(...skills.map(s => s.hours)), max: 5000 },
-    { id: 'master', category: 'milestones', name: 'Master', description: 'Complete 10,000 hours in a skill', icon: '👑', requirement: 10000, current: () => Math.max(...skills.map(s => s.hours)), max: 10000 },
+    { id: 'century-club', category: 'milestones', name: 'Century Club', description: 'Reach 100 hours in any skill', icon: '💯', requirement: 100, current: () => skills.length ? Math.max(...skills.map(s => s.hours)) : 0, max: 100 },
+    { id: 'halfway-there', category: 'milestones', name: 'Halfway There', description: 'Reach 5,000 hours in any skill', icon: '🎯', requirement: 5000, current: () => skills.length ? Math.max(...skills.map(s => s.hours)) : 0, max: 5000 },
+    { id: 'master', category: 'milestones', name: 'Master', description: 'Complete 10,000 hours in a skill', icon: '👑', requirement: 10000, current: () => skills.length ? Math.max(...skills.map(s => s.hours)) : 0, max: 10000 },
     { id: 'total-dedication', category: 'milestones', name: 'Total Dedication', description: 'Accumulate 10,000 hours across all skills', icon: '🏆', requirement: 10000, current: () => userStats.totalHoursLogged, max: 10000 },
     
     // Consistency
@@ -117,7 +166,7 @@ const achievements = [
     // Speed & Intensity
     { id: 'power-hour', category: 'speed', name: 'Power Hour', description: 'Log 5 hours in a single day', icon: '💪', requirement: 5, current: () => userStats.maxDailyHours, max: 5 },
     { id: 'marathon-week', category: 'speed', name: 'Marathon Week', description: 'Log 30+ hours in one week', icon: '🏃‍♂️', requirement: 30, current: () => userStats.maxWeeklyHours, max: 30 },
-    { id: 'focused', category: 'speed', name: 'Focused', description: 'Log 3+ hours in a single session', icon: '🎯', requirement: 1, current: () => 1, max: 1 },
+    { id: 'focused', category: 'speed', name: 'Focused', description: 'Log 3+ hours in a single session', icon: '🎯', requirement: 1, current: () => timeHistory.filter(e => e.duration >= 3).length > 0 ? 1 : 0, max: 1 },
     
     // Special
     { id: 'weekend-warrior', category: 'special', name: 'Weekend Warrior', description: 'Practice on 10 weekends', icon: '🎉', requirement: 10, current: () => userStats.weekendSessions, max: 10 },
@@ -269,6 +318,7 @@ function generateSampleTimeHistory() {
 // Initialize demo
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, initializing...');
+    updateUserStats(); // Calculate stats from actual data first
     renderSkills();
     updateStats();
     initModal();
@@ -278,8 +328,8 @@ document.addEventListener('DOMContentLoaded', function() {
     generateHeatmap(12);
     initSettings();
     initAchievements();
-    generateSampleTimeHistory(); // Generate data first
-    initTimeHistory(); // Then initialize UI
+    // Note: generateSampleTimeHistory() removed - users start with empty data
+    initTimeHistory(); // Initialize UI with empty or loaded data
 });
 
 // Render all skills
@@ -377,11 +427,17 @@ function updateStats() {
     const totalHours = skills.reduce((sum, skill) => sum + skill.hours, 0);
     const totalHoursEl = document.getElementById('totalHours');
     const skillCountEl = document.getElementById('skillCount');
-    const weekHoursEl = document.querySelector('.demo-stat-card:nth-child(4) .demo-stat-value');
+    const weekHoursEl = document.getElementById('hoursThisWeek');
+    const dayStreakEl = document.getElementById('dayStreak');
     
     if (totalHoursEl) totalHoursEl.textContent = totalHours.toLocaleString();
     if (skillCountEl) skillCountEl.textContent = skills.length;
     if (weekHoursEl) weekHoursEl.textContent = hoursThisWeek.toFixed(1);
+    // Day streak calculation would require time history analysis
+    // For now, defaulting to 0 unless calculated elsewhere
+    if (dayStreakEl && dayStreakEl.textContent === '0') {
+        dayStreakEl.textContent = '0';
+    }
 }
 
 // Initialize modal
@@ -451,7 +507,7 @@ function closeModal() {
 }
 
 // Handle form submit
-function handleFormSubmit(e) {
+async function handleFormSubmit(e) {
     e.preventDefault();
     
     const name = document.getElementById('skillName').value.trim();
@@ -469,6 +525,11 @@ function handleFormSubmit(e) {
             skill.category = category;
             skill.hours = hours;
             skill.color = color;
+            
+            // Save to database if authenticated
+            if (typeof saveSkillToDB === 'function') {
+                await saveSkillToDB(skill);
+            }
         }
     } else {
         // Add new skill
@@ -479,11 +540,22 @@ function handleFormSubmit(e) {
             hours,
             color
         };
+        
+        // Save to database if authenticated
+        if (typeof saveSkillToDB === 'function') {
+            const dbSkill = await saveSkillToDB(newSkill);
+            if (dbSkill) {
+                newSkill.id = dbSkill.id; // Use the database ID
+            }
+        }
+        
         skills.push(newSkill);
     }
     
     renderSkills();
     updateStats();
+    updateUserStats(); // Recalculate stats
+    if (typeof updateAchievementStats === 'function') updateAchievementStats(); // Update achievements
     closeModal();
 }
 
@@ -530,8 +602,13 @@ function closeDeleteModal() {
 }
 
 // Confirm delete
-function confirmDelete() {
+async function confirmDelete() {
     if (deletingSkillId) {
+        // Delete from database if authenticated
+        if (typeof deleteSkillFromDB === 'function') {
+            await deleteSkillFromDB(deletingSkillId);
+        }
+        
         skills = skills.filter(s => s.id !== deletingSkillId);
         renderSkills();
         updateStats();
@@ -545,7 +622,7 @@ function deleteSkill(id) {
 }
 
 // Add time to skill (in minutes)
-function addTime(id, minutes) {
+async function addTime(id, minutes) {
     console.log('addTime called:', id, minutes);
     const skill = skills.find(s => s.id === id);
     console.log('Found skill:', skill);
@@ -555,16 +632,26 @@ function addTime(id, minutes) {
         hoursThisWeek += hoursToAdd;
         console.log('Added', hoursToAdd, 'hours. New total:', skill.hours);
         
+        // Save updated hours to database
+        if (typeof saveSkillToDB === 'function') {
+            await saveSkillToDB(skill);
+        }
+        
         // Add entry to time history
         const newEntry = {
             id: Date.now() + Math.random(),
             skillId: skill.id,
             skillName: skill.name,
-            hours: parseFloat(hoursToAdd.toFixed(2)),
+            duration: parseFloat(hoursToAdd.toFixed(2)),
             date: new Date(),
             timestamp: Date.now()
         };
         timeHistory.unshift(newEntry); // Add to beginning
+        
+        // Save time entry to database
+        if (typeof saveTimeEntryToDB === 'function') {
+            await saveTimeEntryToDB(newEntry);
+        }
         
         // Re-render time history if on that section
         const currentTimeframe = document.getElementById('historyTimeframe');
@@ -575,6 +662,8 @@ function addTime(id, minutes) {
         
         renderSkills();
         updateStats();
+        updateUserStats(); // Recalculate stats from actual data
+        if (typeof updateAchievementStats === 'function') updateAchievementStats(); // Update achievements
         
         // Show visual feedback
         const card = document.querySelector(`[data-id="${id}"]`);
@@ -756,7 +845,7 @@ function generateHeatmap(numWeeks = 12) {
     const today = new Date();
     const numDays = numWeeks * 7;
     
-    // Generate dates for last 12 weeks
+    // Generate dates for the timeframe
     const dates = [];
     for (let i = numDays - 1; i >= 0; i--) {
         const date = new Date(today);
@@ -764,18 +853,20 @@ function generateHeatmap(numWeeks = 12) {
         dates.push(date);
     }
     
-    // Generate random practice data
+    // Use actual timeHistory data instead of random data
     const heatmapData = dates.map(date => {
-        // Higher probability of practice on weekdays
-        const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-        const probability = isWeekend ? 0.5 : 0.8;
+        // Find all time entries for this date
+        const dateStr = date.toDateString();
+        const entriesForDate = timeHistory.filter(entry => 
+            entry.date.toDateString() === dateStr
+        );
         
-        if (Math.random() > probability) {
+        if (entriesForDate.length === 0) {
             return { date, hours: 0, level: 0 };
         }
         
-        // Random hours between 0.5 and 4
-        const hours = Math.random() * 3.5 + 0.5;
+        // Sum hours for this date
+        const hours = entriesForDate.reduce((sum, entry) => sum + entry.hours, 0);
         let level;
         if (hours < 1) level = 1;
         else if (hours < 2) level = 2;
@@ -850,26 +941,45 @@ function generateSkillBreakdown(numWeeks) {
     const container = document.getElementById('skillsBreakdown');
     if (!container) return;
     
-    // Generate random hours for each skill based on timeframe
+    // Calculate cutoff date for the timeframe
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - (numWeeks * 7));
+    
+    // Calculate actual hours from timeHistory for each skill
     const skillHours = skills.map(skill => {
-        // More weeks = more hours, but keep it reasonable
-        const baseHours = Math.random() * 20 * (numWeeks / 12);
+        // Filter time entries for this skill within the timeframe
+        const entries = timeHistory.filter(entry => 
+            entry.skillName === skill.name && entry.date >= cutoffDate
+        );
+        
+        // Sum hours for this skill
+        const hours = entries.reduce((sum, entry) => sum + entry.hours, 0);
+        
         return {
             name: skill.name,
-            hours: parseFloat(baseHours.toFixed(1)),
+            hours: parseFloat(hours.toFixed(1)),
             color: skill.color
         };
     });
     
+    // Filter out skills with 0 hours
+    const activeSkills = skillHours.filter(s => s.hours > 0);
+    
     // Sort by hours descending
-    skillHours.sort((a, b) => b.hours - a.hours);
+    activeSkills.sort((a, b) => b.hours - a.hours);
+    
+    // Check if there's any data
+    if (activeSkills.length === 0) {
+        container.innerHTML = '<div class="skills-breakdown-empty">No practice data for this period.</div>';
+        return;
+    }
     
     // Find max hours for scaling
-    const maxHours = Math.max(...skillHours.map(s => s.hours));
+    const maxHours = Math.max(...activeSkills.map(s => s.hours));
     
     // Render skill bars
-    container.innerHTML = skillHours.map(skill => {
-        const percentage = (skill.hours / maxHours) * 100;
+    container.innerHTML = activeSkills.map(skill => {
+        const percentage = maxHours > 0 ? (skill.hours / maxHours) * 100 : 0;
         return `
             <div class="skill-bar-container">
                 <div class="skill-bar-info">

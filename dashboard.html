@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Demo - 10K to Mastery</title>
-    <meta name="description" content="Try 10K to Mastery - Interactive demo of skill tracking features">
+    <title>Dashboard - 10K to Mastery</title>
+    <meta name="description" content="Your personal skill tracking dashboard">
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,13 +28,13 @@
                     <a href="index.html#pricing">Pricing</a>
                 </div>
                 <div class="nav-cta">
-                    <a href="register.html"><button class="btn btn-primary">Get Started</button></a>
+                    <button class="btn btn-primary" id="nav-auth-button" onclick="handleNavAuth()">Logout</button>
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- Demo Banner -->
+    <!-- Dashboard Banner -->
     <section class="demo-banner">
         <div class="container">
             <h1>Your Mastery Dashboard</h1>
@@ -42,7 +42,7 @@
         </div>
     </section>
 
-    <!-- Demo Dashboard -->
+    <!-- Dashboard Content -->
     <section class="demo-section">
         <div class="container">
             <div class="demo-container">
@@ -53,7 +53,7 @@
                             <img src="img/user avatars/Avatar1.png" alt="Avatar" class="demo-avatar-img">
                         </div>
                         <div class="demo-user-info">
-                            <div class="demo-username">Demo User</div>
+                            <div class="demo-username">User</div>
                             <div class="demo-user-meta" id="user-plan">Free Plan</div>
                         </div>
                     </div>
@@ -292,7 +292,6 @@
                             <div class="current-plan">
                                 <div class="plan-info">
                                     <div class="plan-badge" id="currentPlanBadge">Free Plan</div>
-                           
                                 </div>
                             </div>
 
@@ -311,8 +310,6 @@
                                             <li>✓ Unlimited skills</li>
                                             <li>✓ Unlimited history</li>
                                             <li>✓ Achievement Badges</li>
-                        
-                                           
                                         </ul>
                                         <button class="btn btn-primary btn-block">Upgrade to Pro</button>
                                     </div>
@@ -330,7 +327,6 @@
                                             <li>✓ Priority support</li>
                                             <li>✓ Early access to new features</li>
                                             <li>✓ Lifetime updates</li>
-                        
                                         </ul>
                                         <button class="btn btn-primary btn-block">Get Lifetime Access</button>
                                     </div>
@@ -516,8 +512,11 @@
         </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="auth.js"></script>
     <script src="script.js"></script>
     <script src="demo.js"></script>
-    <script src="demo-sample.js"></script>
+    <script src="dashboard-auth.js"></script>
 </body>
 </html>
