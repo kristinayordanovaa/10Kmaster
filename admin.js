@@ -87,7 +87,7 @@ function renderUsers() {
 
 // Delete user
 async function deleteUser(userId, userEmail) {
-    if (!confirm(`Are you sure you want to delete user: ${userEmail}?`)) {
+    if (!confirm(`Are you sure you want to delete user: ${userEmail}?\n\nThis will permanently delete:\n- Their profile\n- All their skills\n- All their time entries\n- Their account\n\nThis action cannot be undone.`)) {
         return;
     }
     
@@ -95,17 +95,31 @@ async function deleteUser(userId, userEmail) {
     errorDiv.style.display = 'none';
     
     try {
-        // First delete the profile (which will cascade delete skills and time_entries)
-        const { error: profileError } = await window.supabaseClient
-            .from('profiles')
-            .delete()
-            .eq('id', userId);
+        // First, try to delete user's uploaded avatars from storage
+        try {
+            const { data: files, error: listError } = await window.supabaseClient.storage
+                .from('avatars')
+                .list(userId);
+            
+            if (!listError && files && files.length > 0) {
+                const filePaths = files.map(file => `${userId}/${file.name}`);
+                await window.supabaseClient.storage
+                    .from('avatars')
+                    .remove(filePaths);
+            }
+        } catch (storageError) {
+            console.warn('Error deleting avatar files:', storageError);
+            // Continue with user deletion even if avatar deletion fails
+        }
         
-        if (profileError) throw profileError;
+        // Call the delete_user RPC function which handles everything
+        const { error } = await window.supabaseClient
+            .rpc('delete_user', { user_id: userId });
         
-        // Note: Deleting from auth.users requires admin privileges
-        // For now, we'll just delete the profile
-        // In production, you'd use a server-side admin API to delete the auth user
+        if (error) throw error;
+        
+        // Show success message
+        alert(`User ${userEmail} has been successfully deleted.`);
         
         // Reload users
         await loadUsers();
