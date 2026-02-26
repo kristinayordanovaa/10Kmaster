@@ -116,7 +116,6 @@ async function editBlogPost(postId) {
     document.getElementById('blog-title-input').value = post.title;
     document.getElementById('blog-excerpt').value = post.excerpt || '';
     document.getElementById('blog-content-input').value = post.content;
-    document.getElementById('blog-published').checked = post.published;
     
     // Show current header image if exists
     if (post.header_image_url) {
@@ -192,7 +191,6 @@ async function saveBlogPost() {
     const title = document.getElementById('blog-title-input').value.trim();
     const excerpt = document.getElementById('blog-excerpt').value.trim();
     const content = document.getElementById('blog-content-input').value.trim();
-    const published = document.getElementById('blog-published').checked;
     const headerImageFile = document.getElementById('blog-header-image').files[0];
     
     if (!title || !content) {
@@ -250,8 +248,8 @@ async function saveBlogPost() {
             excerpt: excerpt || null,
             content,
             header_image_url: headerImageUrl,
-            published,
-            published_at: published ? new Date().toISOString() : null,
+            published: true,
+            published_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
         };
         
