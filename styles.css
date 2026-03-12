@@ -544,12 +544,20 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .free-app-card {
-    max-width: 800px;
+    max-width: 1100px;
     margin: 0 auto;
     padding: 60px;
     background: white;
     border-radius: 24px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    text-align: center;
+}
+
+.free-content {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 0;
+    text-align: center;
 }
 
 .free-badge {
@@ -789,6 +797,10 @@ h1, h2, h3, h4, h5, h6 {
         padding: 40px 24px;
     }
     
+    .free-content {
+        padding: 20px 24px;
+    }
+    
     .free-features {
         grid-template-columns: 1fr;
     }
@@ -966,9 +978,8 @@ h1, h2, h3, h4, h5, h6 {
 /* About Page Styles */
 .about-hero {
     padding: 140px 0 80px;
-    background: #1200FF;
-    background: linear-gradient(16deg, rgba(18, 0, 255, 1) 0%, rgba(252, 187, 248, 1) 63%);
-    color: white;
+    background: url('img/headerbg1.jpeg') center/cover no-repeat;
+    color: black;
     text-align: center;
 }
 
@@ -1378,9 +1389,8 @@ h1, h2, h3, h4, h5, h6 {
 /* Contact Page Styles - REMOVED */
 .contact-hero {
     padding: 140px 0 80px;
-    background: #1200FF;
-    background: linear-gradient(16deg, rgba(18, 0, 255, 1) 0%, rgba(252, 187, 248, 1) 63%);
-    color: white;
+    background: url('img/headerbg1.jpeg') center/cover no-repeat;
+    color: black;
     text-align: center;
 }
 
@@ -1676,9 +1686,8 @@ h1, h2, h3, h4, h5, h6 {
 /* Help Center Styles */
 .help-hero {
     padding: 140px 0 80px;
-    background: #1200FF;
-    background: linear-gradient(16deg, rgba(18, 0, 255, 1) 0%, rgba(252, 187, 248, 1) 63%);
-    color: white;
+    background: url('img/headerbg1.jpeg') center/cover no-repeat;
+    color: black;
     text-align: center;
 }
 
@@ -1967,9 +1976,8 @@ h1, h2, h3, h4, h5, h6 {
 /* Blog Styles */
 .blog-hero {
     padding: 140px 0 80px;
-    background: #1200FF;
-    background: linear-gradient(16deg, rgba(18, 0, 255, 1) 0%, rgba(252, 187, 248, 1) 63%);
-    color: white;
+    background: url('img/headerbg1.jpeg') center/cover no-repeat;
+    color: black;
     text-align: center;
 }
 
@@ -2311,10 +2319,9 @@ h1, h2, h3, h4, h5, h6 {
 /* Reviews Page */
 .reviews-header {
     padding: 140px 0 80px;
-    background: #1200FF;
-    background: linear-gradient(16deg, rgba(18, 0, 255, 1) 0%, rgba(252, 187, 248, 1) 63%);
+    background: url('img/headerbg1.jpeg') center/cover no-repeat;
     text-align: center;
-    color: white;
+    color: black;
 }
 
 .reviews-header h1 {
@@ -2424,10 +2431,9 @@ h1, h2, h3, h4, h5, h6 {
 /* Demo Page */
 .demo-banner {
     padding: 140px 0 80px;
-    background: #1200FF;
-    background: linear-gradient(16deg, rgba(18, 0, 255, 1) 0%, rgba(252, 187, 248, 1) 63%);
+    background: url('img/headerbg1.jpeg') center/cover no-repeat;
     text-align: center;
-    color: white;
+    color: black;
 }
 
 .demo-badge {
