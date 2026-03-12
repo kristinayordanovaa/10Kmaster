@@ -2,19 +2,67 @@
 let allBlogPosts = [];
 let currentEditingPost = null;
 
-// Tab switching
-function switchTab(tab) {
-    // Update tab buttons
-    document.querySelectorAll('.admin-tab').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
+// Helper function to generate slug from title
+function generateSlug(title) {
+    return title.toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+}
+
+// Initialize blog posts on load
+document.addEventListener('DOMContentLoaded', async () => {
+    // Wait a tick to ensure supabase-config.js has initialized
+    await new Promise(resolve => setTimeout(resolve, 100));
     
-    // Update content
-    document.querySelectorAll('.admin-content').forEach(content => content.classList.remove('active'));
-    document.getElementById(`${tab}-content`).classList.add('active');
+    if (!window.supabaseClient) {
+        console.error('Supabase client not initialized');
+        return;
+    }
     
-    // Load data if needed
-    if (tab === 'blog' && allBlogPosts.length === 0) {
+    // Check if user is admin (checkAdmin function is in auth.js)
+    // This will redirect if not admin
+    const isAdmin = await checkAdmin();
+    if (isAdmin) {
+        // Load blog posts immediately
         loadBlogPosts();
+        
+        // Add event listeners for SEO field updates
+        setupSEOFieldListeners();
+    }
+});
+
+// Setup event listeners for SEO fields
+function setupSEOFieldListeners() {
+    const titleInput = document.getElementById('blog-title-input');
+    const slugInput = document.getElementById('blog-slug-input');
+    const descriptionInput = document.getElementById('blog-description');
+    const slugPreview = document.getElementById('slug-preview');
+    const descriptionCount = document.getElementById('description-count');
+    
+    // Auto-generate slug from title
+    if (titleInput && slugInput) {
+        titleInput.addEventListener('input', (e) => {
+            // Only auto-generate if slug is empty or matches previous title's slug
+            if (!slugInput.dataset.manuallyEdited) {
+                const newSlug = generateSlug(e.target.value);
+                slugInput.value = newSlug;
+                if (slugPreview) slugPreview.textContent = newSlug || 'your-slug';
+            }
+        });
+        
+        // Mark as manually edited when user types in slug field
+        slugInput.addEventListener('input', (e) => {
+            slugInput.dataset.manuallyEdited = 'true';
+            if (slugPreview) slugPreview.textContent = e.target.value || 'your-slug';
+        });
+    }
+    
+    // Update character count for description
+    if (descriptionInput && descriptionCount) {
+        descriptionInput.addEventListener('input', (e) => {
+            descriptionCount.textContent = e.target.value.length;
+        });
     }
 }
 
@@ -96,6 +144,17 @@ function openBlogEditor() {
     document.getElementById('blog-form').reset();
     document.getElementById('blog-id').value = '';
     document.getElementById('blog-current-image').style.display = 'none';
+    
+    // Reset slug manual edit flag
+    const slugInput = document.getElementById('blog-slug-input');
+    if (slugInput) {
+        slugInput.dataset.manuallyEdited = '';
+    }
+    
+    // Reset counters
+    document.getElementById('slug-preview').textContent = 'your-slug';
+    document.getElementById('description-count').textContent = '0';
+    
     document.getElementById('blog-editor-modal').style.display = 'flex';
 }
 
@@ -114,8 +173,20 @@ async function editBlogPost(postId) {
     document.getElementById('blog-editor-title').textContent = 'Edit Blog Post';
     document.getElementById('blog-id').value = post.id;
     document.getElementById('blog-title-input').value = post.title;
+    document.getElementById('blog-slug-input').value = post.slug || generateSlug(post.title);
+    document.getElementById('blog-description').value = post.description || '';
     document.getElementById('blog-excerpt').value = post.excerpt || '';
     document.getElementById('blog-content-input').value = post.content;
+    
+    // Mark slug as manually edited if it exists
+    const slugInput = document.getElementById('blog-slug-input');
+    if (slugInput && post.slug) {
+        slugInput.dataset.manuallyEdited = 'true';
+    }
+    
+    // Update counters
+    document.getElementById('slug-preview').textContent = post.slug || generateSlug(post.title);
+    document.getElementById('description-count').textContent = (post.description || '').length;
     
     // Show current header image if exists
     if (post.header_image_url) {
@@ -133,7 +204,9 @@ function viewBlogPost(postId) {
     const post = allBlogPosts.find(p => p.id === postId);
     if (!post) return;
     
-    window.open(`blog-post.html#${post.id}`, '_blank');
+    // Use slug if available, otherwise fall back to ID
+    const postUrl = post.slug ? `blog-post.html?slug=${post.slug}` : `blog-post.html#${post.id}`;
+    window.open(postUrl, '_blank');
 }
 
 // Delete blog post
@@ -189,20 +262,38 @@ document.addEventListener('DOMContentLoaded', () => {
 async function saveBlogPost() {
     const postId = document.getElementById('blog-id').value;
     const title = document.getElementById('blog-title-input').value.trim();
+    const slug = document.getElementById('blog-slug-input').value.trim();
+    const description = document.getElementById('blog-description').value.trim();
     const excerpt = document.getElementById('blog-excerpt').value.trim();
     const content = document.getElementById('blog-content-input').value.trim();
     const headerImageFile = document.getElementById('blog-header-image').files[0];
     
-    if (!title || !content) {
-        alert('Please fill in all required fields');
+    if (!title || !slug || !description || !content) {
+        alert('Please fill in all required fields (Title, Slug, Description, and Content)');
+        return;
+    }
+    
+    // Validate slug format (lowercase, alphanumeric and hyphens only)
+    const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+    if (!slugPattern.test(slug)) {
+        alert('Slug must be lowercase, alphanumeric with hyphens only (e.g., my-blog-post)');
         return;
     }
     
     try {
-        // Generate slug from title
-        const slug = title.toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/(^-|-$)/g, '');
+        // Check if slug is already used by another post
+        const { data: existingPosts } = await window.supabaseClient
+            .from('blog_posts')
+            .select('id')
+            .eq('slug', slug);
+        
+        if (existingPosts && existingPosts.length > 0) {
+            // If editing, allow same slug for same post
+            if (!postId || existingPosts[0].id !== postId) {
+                alert('This URL slug is already in use. Please choose a different one.');
+                return;
+            }
+        }
         
         let headerImageUrl = currentEditingPost?.header_image_url || null;
         
@@ -245,6 +336,7 @@ async function saveBlogPost() {
         const postData = {
             title,
             slug,
+            description,
             excerpt: excerpt || null,
             content,
             header_image_url: headerImageUrl,

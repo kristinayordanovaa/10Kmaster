@@ -23,7 +23,7 @@ A comprehensive web application for tracking your journey to mastery through the
 - **Blog System** (`blog.html`, `blog-post.html`) - Content marketing and SEO
 - **Admin Panel** (`admin.html`) - User and blog post management
 - **Authentication** (`login.html`, `register.html`) - Secure user access
-- **Static Pages** - About, Help Center, Reviews, Terms, Privacy, Cookies
+- **Static Pages** - About, Help Center, Terms, Privacy, Cookies
 
 ### 🎨 Design Features
 - Modern gradient UI with smooth animations

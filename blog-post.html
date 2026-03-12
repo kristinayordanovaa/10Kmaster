@@ -4,7 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blog Post - 10K to Mastery</title>
-    <meta name="description" content="Blog post from 10K to Mastery">
+    <meta name="description" content="Blog post from 10K to Mastery" id="meta-description">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="article" id="og-type">
+    <meta property="og:url" content="" id="og-url">
+    <meta property="og:title" content="Blog Post - 10K to Mastery" id="og-title">
+    <meta property="og:description" content="Blog post from 10K to Mastery" id="og-description">
+    <meta property="og:image" content="" id="og-image">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="" id="twitter-url">
+    <meta property="twitter:title" content="Blog Post - 10K to Mastery" id="twitter-title">
+    <meta property="twitter:description" content="Blog post from 10K to Mastery" id="twitter-description">
+    <meta property="twitter:image" content="" id="twitter-image">
+    
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -86,14 +101,19 @@
         async function loadBlogPost() {
             console.log('[Blog Post] Starting to load post...');
             
-            // Get post ID from URL hash (after #)
+            // Get post ID or slug from URL
+            // Support both: blog-post.html?slug=my-post and blog-post.html#post-id
+            const urlParams = new URLSearchParams(window.location.search);
+            const slug = urlParams.get('slug');
             const postId = window.location.hash.substring(1); // Remove the # symbol
             
+            console.log('[Blog Post] URL search:', window.location.search);
             console.log('[Blog Post] URL hash:', window.location.hash);
+            console.log('[Blog Post] Slug:', slug);
             console.log('[Blog Post] Post ID:', postId);
 
-            if (!postId) {
-                console.warn('[Blog Post] No post ID provided');
+            if (!slug && !postId) {
+                console.warn('[Blog Post] No slug or post ID provided');
                 document.getElementById('post-title').textContent = 'No Post Selected';
                 document.getElementById('post-content').innerHTML = '<p>Please select a blog post from the <a href="blog.html">blog page</a>.</p>';
                 return;
@@ -111,17 +131,18 @@
                 document.getElementById('post-title').textContent = 'Error Loading Post';
                 document.getElementById('post-content').innerHTML = '<p>Failed to connect to database. Please refresh the page.</p>';
                 return;
-            }
-            
-            console.log('[Blog Post] Supabase client ready, fetching post...');
-
-            try {
-                // Fetch post from Supabase
-                const { data: post, error } = await window.supabaseClient
+            } by slug or ID
+                let query = window.supabaseClient
                     .from('blog_posts')
-                    .select('*')
-                    .eq('id', postId)
-                    .single();
+                    .select('*');
+                
+                if (slug) {
+                    query = query.eq('slug', slug);
+                } else {
+                    query = query.eq('id', postId);
+                }
+                
+                const { data: post, error } = await query.single();
 
                 if (error) {
                     console.error('[Blog Post] Database error:', error);
@@ -135,6 +156,9 @@
                 
                 console.log('[Blog Post] Successfully loaded:', post.title);
 
+                // Update SEO meta tags
+                updateSEOTags(post);
+
                 // Set header image
                 const headerElement = document.getElementById('post-header-image');
                 if (post.header_image_url) {
@@ -145,7 +169,6 @@
 
                 // Set title
                 document.getElementById('post-title').textContent = post.title;
-                document.title = `${post.title} - 10K to Mastery`;
 
                 // Convert markdown content to HTML
                 const htmlContent = marked.marked(post.content);
@@ -153,6 +176,38 @@
                 
                 console.log('[Blog Post] Rendering complete');
 
+            } catch (error) {
+                console.error('[Blog Post] Error loading blog post:', error);
+                document.getElementById('post-title').textContent = 'Post Not Found';
+                document.getElementById('post-content').innerHTML = '<p>Sorry, the blog post you\'re looking for doesn\'t exist or is not published yet.</p><p><a href="blog.html">← Back to Blog</a></p>';
+            }
+        }
+        
+        // Update SEO meta tags with post data
+        function updateSEOTags(post) {
+            const pageTitle = `${post.title} - 10K to Mastery`;
+            const description = post.description || post.excerpt || post.content.substring(0, 160);
+            const currentUrl = window.location.href.split('?')[0].split('#')[0] + '?slug=' + post.slug;
+            const imageUrl = post.header_image_url || '';
+            
+            // Update page title
+            document.title = pageTitle;
+            
+            // Update meta description
+            const metaDesc = document.getElementById('meta-description');
+            if (metaDesc) metaDesc.setAttribute('content', description);
+            
+            // Update Open Graph tags
+            document.getElementById('og-url')?.setAttribute('content', currentUrl);
+            document.getElementById('og-title')?.setAttribute('content', post.title);
+            document.getElementById('og-description')?.setAttribute('content', description);
+            if (imageUrl) document.getElementById('og-image')?.setAttribute('content', imageUrl);
+            
+            // Update Twitter tags
+            document.getElementById('twitter-url')?.setAttribute('content', currentUrl);
+            document.getElementById('twitter-title')?.setAttribute('content', post.title);
+            document.getElementById('twitter-description')?.setAttribute('content', description);
+            if (imageUrl) document.getElementById('twitter-image')?.setAttribute('content', imageUrl);
             } catch (error) {
                 console.error('[Blog Post] Error loading blog post:', error);
                 document.getElementById('post-title').textContent = 'Post Not Found';

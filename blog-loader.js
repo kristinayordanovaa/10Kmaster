@@ -49,17 +49,20 @@ async function loadBlogPosts() {
         // Generate blog cards
         const blogCardsHtml = posts.map(post => {
             const headerImage = post.header_image_url || 'img/blog/default.jpg';
-            const excerpt = post.excerpt || post.content.substring(0, 150) + '...';
+            const excerpt = post.excerpt || (post.description) || post.content.substring(0, 150) + '...';
             const publishedDate = post.published_at ? new Date(post.published_at).toLocaleDateString('en-US', { 
                 year: 'numeric', 
                 month: 'long', 
                 day: 'numeric' 
             }) : '';
             
-            console.log('[Blog Loader] Creating card for:', post.title, 'with ID:', post.id);
+            // Use slug if available, otherwise fall back to ID
+            const postUrl = post.slug ? `blog-post.html?slug=${post.slug}` : `blog-post.html#${post.id}`;
+            
+            console.log('[Blog Loader] Creating card for:', post.title, 'with URL:', postUrl);
             
             return `
-                <a href="blog-post.html#${post.id}" class="blog-card">
+                <a href="${postUrl}" class="blog-card">
                     ${post.header_image_url ? `
                         <div class="blog-card-image" style="background-image: url('${headerImage}');"></div>
                     ` : ''}
