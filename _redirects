@@ -1,0 +1,4 @@
+# Netlify redirect rules
+
+# Clean URLs for blog posts: /blog/slug → blog-post.html?slug=slug
+/blog/:slug  /blog-post.html?slug=:slug  200

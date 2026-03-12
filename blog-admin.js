@@ -204,8 +204,8 @@ function viewBlogPost(postId) {
     const post = allBlogPosts.find(p => p.id === postId);
     if (!post) return;
     
-    // Use slug if available, otherwise fall back to ID
-    const postUrl = post.slug ? `blog-post.html?slug=${post.slug}` : `blog-post.html#${post.id}`;
+    // Use clean /blog/slug URL if slug exists, otherwise fall back to ID
+    const postUrl = post.slug ? `/blog/${post.slug}` : `blog-post.html#${post.id}`;
     window.open(postUrl, '_blank');
 }
 
