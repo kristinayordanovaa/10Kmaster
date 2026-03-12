@@ -13,6 +13,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     const loginForm = document.getElementById('login-form');
     if (loginForm) {
         loginForm.addEventListener('submit', handleLogin);
+        
+        // Handle forgot password modal
+        const forgotPasswordLink = document.getElementById('forgot-password-link');
+        const forgotPasswordModal = document.getElementById('forgot-password-modal');
+        const closeModal = document.getElementById('close-modal');
+        const resetPasswordForm = document.getElementById('reset-password-form');
+        
+        if (forgotPasswordLink && forgotPasswordModal) {
+            forgotPasswordLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                forgotPasswordModal.style.display = 'block';
+            });
+            
+            closeModal.addEventListener('click', () => {
+                forgotPasswordModal.style.display = 'none';
+                document.getElementById('reset-error-message').style.display = 'none';
+                document.getElementById('reset-success-message').style.display = 'none';
+                resetPasswordForm.reset();
+            });
+            
+            window.addEventListener('click', (e) => {
+                if (e.target === forgotPasswordModal) {
+                    forgotPasswordModal.style.display = 'none';
+                    document.getElementById('reset-error-message').style.display = 'none';
+                    document.getElementById('reset-success-message').style.display = 'none';
+                    resetPasswordForm.reset();
+                }
+            });
+            
+            resetPasswordForm.addEventListener('submit', handlePasswordReset);
+        }
     }
 
     // Check if we're on register page
@@ -63,6 +94,46 @@ async function handleLogin(e) {
         errorDiv.style.display = 'block';
         button.disabled = false;
         button.textContent = 'Sign In';
+    }
+}
+
+// Handle password reset
+async function handlePasswordReset(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('reset-email').value;
+    const button = document.getElementById('reset-button');
+    const errorDiv = document.getElementById('reset-error-message');
+    const successDiv = document.getElementById('reset-success-message');
+    
+    button.disabled = true;
+    button.textContent = 'Sending...';
+    errorDiv.style.display = 'none';
+    successDiv.style.display = 'none';
+    
+    try {
+        const { error } = await window.supabaseClient.auth.resetPasswordForEmail(email, {
+            redirectTo: `${window.location.origin}/reset-password.html`
+        });
+        
+        if (error) throw error;
+        
+        successDiv.textContent = 'Password reset link sent! Please check your email.';
+        successDiv.style.display = 'block';
+        
+        // Reset form and close modal after 3 seconds
+        setTimeout(() => {
+            document.getElementById('forgot-password-modal').style.display = 'none';
+            document.getElementById('reset-password-form').reset();
+            successDiv.style.display = 'none';
+        }, 3000);
+        
+    } catch (error) {
+        errorDiv.textContent = error.message;
+        errorDiv.style.display = 'block';
+    } finally {
+        button.disabled = false;
+        button.textContent = 'Send Reset Link';
     }
 }
 

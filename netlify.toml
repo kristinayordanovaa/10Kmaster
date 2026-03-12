@@ -1,0 +1,11 @@
+[build]
+  publish = "."
+  
+# Environment variables required for this project (set in Netlify dashboard):
+# - SUPABASE_URL: Your Supabase project URL
+# - SUPABASE_ANON_KEY: Your Supabase anonymous/public key
+
+[[redirects]]
+  from = "/api/config"
+  to = "/.netlify/functions/config"
+  status = 200

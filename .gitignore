@@ -12,6 +12,9 @@ MARKDOWN-GUIDE.md
 .env*.local
 *.env
 
+# Local development config (contains sensitive keys)
+supabase-config.local.js
+
 # Node.js
 node_modules/
 npm-debug.log*
