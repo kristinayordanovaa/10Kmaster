@@ -79,7 +79,6 @@ A comprehensive web application for tracking your journey to mastery through the
 ├── admin.html              # Admin panel
 ├── login.html              # Login page
 ├── register.html           # Registration page
-├── reviews.html            # User reviews/testimonials
 ├── help-center.html        # Help & FAQ
 ├── privacy.html            # Privacy policy
 ├── terms.html              # Terms of service
