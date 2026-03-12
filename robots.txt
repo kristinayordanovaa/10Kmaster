@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# Private app pages - no indexing needed
+Disallow: /dashboard.html
+Disallow: /admin.html
+Disallow: /login.html
+Disallow: /register.html
+Disallow: /reset-password.html
+Disallow: /setup-users.html
+Disallow: /reset-admin-password.html
+
+Sitemap: https://10tomaster.com/sitemap.xml

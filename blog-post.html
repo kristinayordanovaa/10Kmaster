@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>10K to Mastery Blog</title>
-    <meta name="description" content="Blog post from 10K to Mastery" id="meta-description">
+    <title>10 to Master Blog</title>
+    <meta name="description" content="Blog post from 10 to Master" id="meta-description">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="article" id="og-type">
     <meta property="og:url" content="" id="og-url">
-    <meta property="og:title" content="Blog Post - 10K to Mastery" id="og-title">
-    <meta property="og:description" content="Blog post from 10K to Mastery" id="og-description">
+    <meta property="og:title" content="Blog Post - 10 to Master" id="og-title">
+    <meta property="og:description" content="Blog post from 10 to Master" id="og-description">
     <meta property="og:image" content="" id="og-image">
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="" id="twitter-url">
-    <meta property="twitter:title" content="Blog Post - 10K to Mastery" id="twitter-title">
-    <meta property="twitter:description" content="Blog post from 10K to Mastery" id="twitter-description">
+    <meta property="twitter:title" content="Blog Post - 10 to Master" id="twitter-title">
+    <meta property="twitter:description" content="Blog post from 10 to Master" id="twitter-description">
     <meta property="twitter:image" content="" id="twitter-image">
     
     <link rel="stylesheet" href="/styles.css">
@@ -33,7 +33,7 @@
             <div class="nav-content">
                 <div class="logo">
                     <a href="/index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center;">
-                        <span class="logo-text">10K to Mastery</span>
+                        <span class="logo-text">10 to Master</span>
                     </a>
                 </div>
                 <div class="nav-links">
@@ -88,7 +88,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2026 10K to Mastery. All rights reserved.</p>
+                <p>&copy; 2026 10 to Master. All rights reserved.</p>
             </div>
         </div>
     </footer>
@@ -176,7 +176,7 @@
         function updateSEOTags(post) {
             const pageTitle = post.title;
             const description = post.description || post.excerpt || post.content.substring(0, 160);
-            const cleanUrl = `${window.location.origin}/blog/${post.slug}`;
+            const cleanUrl = `https://10tomaster.com/blog/${post.slug}`;
             const imageUrl = post.header_image_url || '';
 
             document.title = pageTitle;
@@ -193,6 +193,42 @@
             document.getElementById('twitter-title')?.setAttribute('content', post.title);
             document.getElementById('twitter-description')?.setAttribute('content', description);
             if (imageUrl) document.getElementById('twitter-image')?.setAttribute('content', imageUrl);
+
+            // Set canonical for this post
+            let canonical = document.querySelector('link[rel="canonical"]');
+            if (!canonical) {
+                canonical = document.createElement('link');
+                canonical.rel = 'canonical';
+                document.head.appendChild(canonical);
+            }
+            canonical.href = cleanUrl;
+
+            // Inject BlogPosting schema.org JSON-LD
+            const existingSchema = document.getElementById('blog-post-schema');
+            if (existingSchema) existingSchema.remove();
+            const schema = document.createElement('script');
+            schema.id = 'blog-post-schema';
+            schema.type = 'application/ld+json';
+            schema.textContent = JSON.stringify({
+                '@context': 'https://schema.org',
+                '@type': 'BlogPosting',
+                'headline': post.title,
+                'description': description,
+                'url': cleanUrl,
+                'datePublished': post.published_at || post.created_at,
+                'dateModified': post.updated_at || post.published_at || post.created_at,
+                'image': imageUrl || undefined,
+                'publisher': {
+                    '@type': 'Organization',
+                    'name': '10 to Master',
+                    'url': 'https://10tomaster.com'
+                },
+                'mainEntityOfPage': {
+                    '@type': 'WebPage',
+                    '@id': cleanUrl
+                }
+            });
+            document.head.appendChild(schema);
         }
 
         if (document.readyState === 'loading') {
