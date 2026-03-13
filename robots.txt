@@ -10,4 +10,4 @@ Disallow: /reset-password.html
 Disallow: /setup-users.html
 Disallow: /reset-admin-password.html
 
-Sitemap: https://10tomaster.com/sitemap.xml
+Sitemap: https://10ktomaster.com/sitemap.xml
