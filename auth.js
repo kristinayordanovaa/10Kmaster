@@ -1,17 +1,10 @@
 // Authentication handling
 // Note: supabase client is initialized in supabase-config.js as window.supabaseClient
-document.addEventListener('DOMContentLoaded', async () => {
-    // Wait a tick to ensure supabase-config.js has initialized
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    if (!window.supabaseClient) {
-        console.error('Supabase client not initialized');
-        return;
-    }
-    
+document.addEventListener('DOMContentLoaded', () => {
     // Check if we're on login page
     const loginForm = document.getElementById('login-form');
     if (loginForm) {
+        showLoginConfirmationMessage();
         loginForm.addEventListener('submit', handleLogin);
         
         // Handle forgot password modal
@@ -53,6 +46,60 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
+function showLoginConfirmationMessage() {
+    const successDiv = document.getElementById('success-message');
+    if (!successDiv) return;
+
+    const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
+    const queryParams = new URLSearchParams(window.location.search);
+    const isSignupConfirmation = hashParams.get('type') === 'signup' || queryParams.get('confirmed') === '1';
+
+    if (!isSignupConfirmation) return;
+
+    successDiv.innerHTML = `
+        <div>Your account has been confirmed successfully.</div>
+        <div style="margin-top: 8px;">You can now sign in.</div>
+    `;
+    successDiv.style.display = 'block';
+    const emailInput = document.getElementById('email');
+    if (emailInput) {
+        emailInput.focus();
+        emailInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+// Wait for Supabase client to be initialized by supabase-config.js.
+async function getSupabaseClient() {
+    if (window.supabaseClient) return window.supabaseClient;
+
+    await new Promise((resolve, reject) => {
+        const timeoutMs = 10000;
+
+        const onReady = () => {
+            cleanup();
+            resolve();
+        };
+
+        const onTimeout = setTimeout(() => {
+            cleanup();
+            reject(new Error('Authentication service is still loading. Please try again.'));
+        }, timeoutMs);
+
+        const cleanup = () => {
+            clearTimeout(onTimeout);
+            window.removeEventListener('supabaseReady', onReady);
+        };
+
+        window.addEventListener('supabaseReady', onReady);
+    });
+
+    if (!window.supabaseClient) {
+        throw new Error('Authentication service is not available. Please refresh the page.');
+    }
+
+    return window.supabaseClient;
+}
+
 // Handle login
 async function handleLogin(e) {
     e.preventDefault();
@@ -67,7 +114,9 @@ async function handleLogin(e) {
     errorDiv.style.display = 'none';
     
     try {
-        const { data, error } = await window.supabaseClient.auth.signInWithPassword({
+        const supabaseClient = await getSupabaseClient();
+
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
             email: email,
             password: password
         });
@@ -75,7 +124,7 @@ async function handleLogin(e) {
         if (error) throw error;
         
         // Check if user is admin
-        const { data: profile, error: profileError } = await window.supabaseClient
+        const { data: profile, error: profileError } = await supabaseClient
             .from('profiles')
             .select('is_admin')
             .eq('id', data.user.id)
@@ -112,7 +161,9 @@ async function handlePasswordReset(e) {
     successDiv.style.display = 'none';
     
     try {
-        const { error } = await window.supabaseClient.auth.resetPasswordForEmail(email, {
+        const supabaseClient = await getSupabaseClient();
+
+        const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
             redirectTo: `${window.location.origin}/reset-password.html`
         });
         
@@ -141,6 +192,7 @@ async function handlePasswordReset(e) {
 async function handleRegister(e) {
     e.preventDefault();
     
+    const registerForm = document.getElementById('register-form');
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     const button = document.getElementById('register-button');
@@ -154,13 +206,16 @@ async function handleRegister(e) {
     button.textContent = 'Creating account...';
     
     try {
+        const supabaseClient = await getSupabaseClient();
+
         // Extract username from email (before @ symbol)
         const username = email.split('@')[0];
         
-        const { data, error } = await window.supabaseClient.auth.signUp({
+        const { data, error } = await supabaseClient.auth.signUp({
             email: email,
             password: password,
             options: {
+                emailRedirectTo: `${window.location.origin}/login.html?confirmed=1`,
                 data: {
                     username: username
                 }
@@ -168,14 +223,25 @@ async function handleRegister(e) {
         });
         
         if (error) throw error;
-        
-        successDiv.textContent = 'Account created successfully! Redirecting...';
+
+        // If email confirmation is enabled, Supabase returns user but no session.
+        if (data?.session) {
+            successDiv.textContent = 'Account created successfully! Redirecting...';
+            successDiv.style.display = 'block';
+
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 2000);
+            return;
+        }
+
+        successDiv.textContent = 'Registration successful. Please check your email and click the confirmation link to activate your account.';
         successDiv.style.display = 'block';
-        
-        // Redirect to dashboard after 2 seconds
-        setTimeout(() => {
-            window.location.href = 'dashboard.html';
-        }, 2000);
+
+        // Keep confirmation message visible and hide the form after successful signup.
+        if (registerForm) {
+            registerForm.style.display = 'none';
+        }
         
     } catch (error) {
         errorDiv.textContent = error.message;
@@ -188,7 +254,8 @@ async function handleRegister(e) {
 // Handle logout
 async function handleLogout() {
     try {
-        const { error } = await window.supabaseClient.auth.signOut();
+        const supabaseClient = await getSupabaseClient();
+        const { error } = await supabaseClient.auth.signOut();
         if (error) throw error;
         window.location.href = 'index.html';
     } catch (error) {
@@ -199,7 +266,8 @@ async function handleLogout() {
 
 // Check authentication status
 async function checkAuth(requireAuth = true) {
-    const { data: { user } } = await window.supabaseClient.auth.getUser();
+    const supabaseClient = await getSupabaseClient();
+    const { data: { user } } = await supabaseClient.auth.getUser();
     
     if (requireAuth && !user) {
         window.location.href = 'login.html';
@@ -214,7 +282,9 @@ async function checkAdmin() {
     const user = await checkAuth(true);
     if (!user) return false;
     
-    const { data: profile, error } = await window.supabaseClient
+    const supabaseClient = await getSupabaseClient();
+
+    const { data: profile, error } = await supabaseClient
         .from('profiles')
         .select('is_admin')
         .eq('id', user.id)
@@ -230,7 +300,9 @@ async function checkAdmin() {
 
 // Get user profile
 async function getUserProfile(userId) {
-    const { data, error } = await window.supabaseClient
+    const supabaseClient = await getSupabaseClient();
+
+    const { data, error } = await supabaseClient
         .from('profiles')
         .select('*')
         .eq('id', userId)
