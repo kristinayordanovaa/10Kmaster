@@ -125,7 +125,7 @@ async function saveSkillToDB(skill) {
     if (!currentUser) return null;
     
     try {
-        if (skill.id && typeof skill.id === 'number' && skill.id > 0) {
+        if (Number.isInteger(skill.id) && skill.id > 0 && skill.id < 1000000000) {
             // Update existing skill
             const { data, error } = await window.supabaseClient
                 .from('skills')

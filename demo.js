@@ -6,11 +6,78 @@ let deletingSkillId = null;
 let activeTimer = null;
 let timerInterval = null;
 let timerSeconds = 0;
+let timerStartedAt = null;
+const ACTIVE_TIMER_STORAGE_KEY = 'tenk_active_timer_v1';
+let timerRestoreAttempted = false;
 let hoursThisWeek = 0;
 
 // Time History
 let timeHistory = [];
 let editingTimeEntryId = null;
+
+function saveActiveTimerState() {
+    if (!activeTimer || !timerStartedAt) return;
+
+    try {
+        localStorage.setItem(ACTIVE_TIMER_STORAGE_KEY, JSON.stringify({
+            skillId: activeTimer,
+            timerSeconds,
+            timerStartedAt
+        }));
+    } catch (error) {
+        console.warn('Unable to persist active timer state:', error);
+    }
+}
+
+function clearActiveTimerState() {
+    try {
+        localStorage.removeItem(ACTIVE_TIMER_STORAGE_KEY);
+    } catch (error) {
+        console.warn('Unable to clear active timer state:', error);
+    }
+}
+
+function readActiveTimerState() {
+    try {
+        const raw = localStorage.getItem(ACTIVE_TIMER_STORAGE_KEY);
+        if (!raw) return null;
+        return JSON.parse(raw);
+    } catch (error) {
+        console.warn('Unable to read active timer state:', error);
+        return null;
+    }
+}
+
+function tryRestoreActiveTimer() {
+    if (timerRestoreAttempted || activeTimer) return;
+
+    const savedState = readActiveTimerState();
+    if (!savedState) {
+        timerRestoreAttempted = true;
+        return;
+    }
+
+    const savedSkillId = Number(savedState.skillId);
+    if (!Number.isFinite(savedSkillId)) {
+        clearActiveTimerState();
+        timerRestoreAttempted = true;
+        return;
+    }
+
+    const savedSkill = skills.find(s => Number(s.id) === savedSkillId);
+    if (!savedSkill) {
+        // Skills may still be loading from DB; try again on the next render pass.
+        return;
+    }
+
+    timerRestoreAttempted = true;
+    startTimer(savedSkillId, {
+        resume: true,
+        initialSeconds: Number(savedState.timerSeconds) || 0,
+        startedAt: Number(savedState.timerStartedAt) || Date.now()
+    });
+    showNotification(`Resumed timer for ${savedSkill.name}.`, 'warning');
+}
 
 // Settings data
 let selectedAvatar = 'img/user avatars/Avatar1.png';
@@ -330,6 +397,23 @@ document.addEventListener('DOMContentLoaded', function() {
     initAchievements();
     // Note: generateSampleTimeHistory() removed - users start with empty data
     initTimeHistory(); // Initialize UI with empty or loaded data
+
+    // Preserve active timer state across page reloads.
+    window.addEventListener('beforeunload', () => {
+        if (activeTimer) {
+            saveActiveTimerState();
+        }
+    });
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden && activeTimer) {
+            saveActiveTimerState();
+        }
+
+        if (!document.hidden && activeTimer) {
+            updateTimerDisplay(activeTimer);
+        }
+    });
 });
 
 // Render all skills
@@ -369,6 +453,8 @@ function renderSkills() {
             toggleTimer(id);
         });
     });
+
+    tryRestoreActiveTimer();
 }
 
 // Create skill card HTML
@@ -534,19 +620,25 @@ async function handleFormSubmit(e) {
     } else {
         // Add new skill
         const newSkill = {
-            id: Date.now(),
             name,
             category,
             hours,
             color
         };
-        
-        // Save to database if authenticated
-        if (typeof saveSkillToDB === 'function') {
+
+        // Save to database only for authenticated users.
+        const isAuthenticatedUser = typeof currentUser !== 'undefined' && !!currentUser;
+        if (isAuthenticatedUser && typeof saveSkillToDB === 'function') {
             const dbSkill = await saveSkillToDB(newSkill);
-            if (dbSkill) {
-                newSkill.id = dbSkill.id; // Use the database ID
+            if (!dbSkill) {
+                showNotification('Unable to save skill right now. Please try again in a moment.', 'warning');
+                return;
             }
+
+            newSkill.id = dbSkill.id; // Use the database ID
+        } else {
+            // Local/demo mode fallback
+            newSkill.id = Date.now();
         }
         
         skills.push(newSkill);
@@ -643,6 +735,7 @@ async function addTime(id, minutes) {
             skillId: skill.id,
             skillName: skill.name,
             duration: parseFloat(hoursToAdd.toFixed(2)),
+            hours: parseFloat(hoursToAdd.toFixed(2)),
             date: new Date(),
             timestamp: Date.now()
         };
@@ -682,9 +775,9 @@ async function addTime(id, minutes) {
 }
 
 // Toggle timer
-function toggleTimer(id) {
+async function toggleTimer(id) {
     if (activeTimer === id) {
-        stopTimer();
+        await stopTimer();
     } else {
         // Check if another timer is already running
         if (activeTimer && activeTimer !== id) {
@@ -696,32 +789,54 @@ function toggleTimer(id) {
     }
 }
 
+function getElapsedTimerSeconds() {
+    if (!activeTimer || !timerStartedAt) {
+        return timerSeconds;
+    }
+
+    const runningSeconds = Math.floor((Date.now() - timerStartedAt) / 1000);
+    return timerSeconds + Math.max(0, runningSeconds);
+}
+
 // Start timer
-function startTimer(id) {
+function startTimer(id, options = {}) {
+    const { resume = false, initialSeconds = 0, startedAt = Date.now() } = options;
+
     activeTimer = id;
-    timerSeconds = 0;
+    timerSeconds = resume ? Math.max(0, Number(initialSeconds) || 0) : 0;
+    timerStartedAt = resume ? Math.max(0, Number(startedAt) || Date.now()) : Date.now();
     
     timerInterval = setInterval(() => {
-        timerSeconds++;
         updateTimerDisplay(id);
+        saveActiveTimerState();
     }, 1000);
+
+    saveActiveTimerState();
     
     renderSkills();
+    updateTimerDisplay(id);
 }
 
 // Stop timer
-function stopTimer() {
+async function stopTimer() {
     if (!activeTimer) return;
     
     clearInterval(timerInterval);
+
+    const elapsedSeconds = getElapsedTimerSeconds();
     
     // Convert seconds to hours and add to skill
-    const hoursToAdd = Math.round((timerSeconds / 3600) * 100) / 100; // Round to 2 decimals
+    const hoursToAdd = Math.round((elapsedSeconds / 3600) * 100) / 100; // Round to 2 decimals
     const skill = skills.find(s => s.id === activeTimer);
     
     if (skill && hoursToAdd > 0) {
         skill.hours = Math.min(skill.hours + hoursToAdd, 10000);
         hoursThisWeek += hoursToAdd;
+
+        // Persist updated skill hours for authenticated users.
+        if (typeof saveSkillToDB === 'function') {
+            await saveSkillToDB(skill);
+        }
         
         // Add entry to time history
         const newEntry = {
@@ -729,10 +844,16 @@ function stopTimer() {
             skillId: skill.id,
             skillName: skill.name,
             hours: hoursToAdd,
+            duration: hoursToAdd,
             date: new Date(),
             timestamp: Date.now()
         };
         timeHistory.unshift(newEntry); // Add to beginning
+
+        // Persist timer entry for authenticated users.
+        if (typeof saveTimeEntryToDB === 'function') {
+            await saveTimeEntryToDB(newEntry);
+        }
         
         // Re-render time history if on that section
         const currentTimeframe = document.getElementById('historyTimeframe');
@@ -747,20 +868,26 @@ function stopTimer() {
     
     activeTimer = null;
     timerSeconds = 0;
+    timerStartedAt = null;
     timerInterval = null;
+    clearActiveTimerState();
     
     renderSkills();
     updateStats();
+    updateUserStats();
+    if (typeof updateAchievementStats === 'function') updateAchievementStats();
 }
 
 // Update timer display
 function updateTimerDisplay(id) {
     const timerEl = document.getElementById(`timer-${id}`);
     if (!timerEl) return;
+
+    const elapsedSeconds = getElapsedTimerSeconds();
     
-    const hours = Math.floor(timerSeconds / 3600);
-    const minutes = Math.floor((timerSeconds % 3600) / 60);
-    const seconds = timerSeconds % 60;
+    const hours = Math.floor(elapsedSeconds / 3600);
+    const minutes = Math.floor((elapsedSeconds % 3600) / 60);
+    const seconds = elapsedSeconds % 60;
     
     timerEl.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
@@ -1149,6 +1276,9 @@ function renderAchievementCategory(containerId, achievements) {
 }
 
 function updateAchievementStats() {
+    // Re-render achievement cards so completed/locked states update live.
+    renderAchievements();
+
     const earnedCount = achievements.filter(a => a.current() >= a.requirement).length;
     const totalCount = achievements.length;
     const progressPercent = Math.round((earnedCount / totalCount) * 100);
