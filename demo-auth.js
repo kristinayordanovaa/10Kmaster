@@ -221,6 +221,7 @@ async function loadTimeHistory() {
                 id: entry.id,
                 skillName: entry.skill_name,
                 duration: parseFloat(entry.duration),
+                hours: parseFloat(entry.duration), // Convert duration to hours
                 date: entry.date,
                 notes: entry.notes || ''
             }));

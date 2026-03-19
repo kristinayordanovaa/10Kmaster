@@ -215,6 +215,9 @@ async function loadTimeHistory() {
         if (typeof updateUserStats === 'function') {
             updateUserStats();
         }
+        if (typeof updateStats === 'function') {
+            updateStats();
+        }
         if (typeof updateAchievementStats === 'function') {
             updateAchievementStats();
         }

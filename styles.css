@@ -2542,7 +2542,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .demo-nav-item.active {
     background: var(--bg-secondary);
-    color: var(--primary);
+    color: #000;
 }
 
 .demo-nav-item span {
@@ -4038,7 +4038,7 @@ h1, h2, h3, h4, h5, h6 {
     .dashboard-page .demo-nav-item.active,
     .dashboard-page .demo-nav-item:hover {
         background: transparent;
-        color: var(--primary);
+        color: #000;
     }
 
     .dashboard-page .demo-main {

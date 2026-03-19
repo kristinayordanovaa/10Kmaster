@@ -278,13 +278,17 @@ function renderTimeHistory(days) {
             year: 'numeric' 
         });
         
+        // Format hours to 2 decimal places
+        const hours = typeof entry.hours === 'number' ? entry.hours : parseFloat(entry.hours);
+        const formattedHours = isNaN(hours) ? '0' : hours.toFixed(2);
+        
         return `
             <div class="time-history-row">
                 <div class="time-history-col-date">${dateStr}</div>
                 <div class="time-history-col-skill">
                     <span class="time-history-skill-name">${entry.skillName}</span>
                 </div>
-                <div class="time-history-col-time">${entry.hours}h</div>
+                <div class="time-history-col-time">${formattedHours}h</div>
                 <div class="time-history-col-actions">
                     <button class="btn-icon btn-icon-edit" onclick="openEditTimeModal(${entry.id})" title="Edit">
                         ✏️
@@ -518,11 +522,20 @@ function updateStats() {
     
     if (totalHoursEl) totalHoursEl.textContent = totalHours.toLocaleString();
     if (skillCountEl) skillCountEl.textContent = skills.length;
-    if (weekHoursEl) weekHoursEl.textContent = hoursThisWeek.toFixed(1);
-    // Day streak calculation would require time history analysis
-    // For now, defaulting to 0 unless calculated elsewhere
-    if (dayStreakEl && dayStreakEl.textContent === '0') {
-        dayStreakEl.textContent = '0';
+    
+    // Calculate hours for this week (last 7 days)
+    if (weekHoursEl) {
+        const now = new Date();
+        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const weekHours = timeHistory
+            .filter(entry => new Date(entry.date) >= sevenDaysAgo)
+            .reduce((sum, entry) => sum + entry.hours, 0);
+        weekHoursEl.textContent = weekHours.toFixed(1);
+    }
+    
+    // Display current day streak
+    if (dayStreakEl) {
+        dayStreakEl.textContent = userStats.currentStreak || 0;
     }
 }
 

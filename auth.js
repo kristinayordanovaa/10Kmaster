@@ -70,19 +70,37 @@ function showLoginConfirmationMessage() {
 
 // Wait for Supabase client to be initialized by supabase-config.js.
 async function getSupabaseClient() {
-    if (window.supabaseClient) return window.supabaseClient;
+    // If already available, return immediately
+    if (window.supabaseClient) {
+        console.log('[Auth] Supabase client already available');
+        return window.supabaseClient;
+    }
 
-    await new Promise((resolve, reject) => {
-        const timeoutMs = 10000;
+    console.log('[Auth] Waiting for Supabase client to be ready...');
+
+    return new Promise((resolve, reject) => {
+        const timeoutMs = 15000; // 15 second timeout
+        let eventFired = false;
 
         const onReady = () => {
+            eventFired = true;
             cleanup();
-            resolve();
+            console.log('[Auth] ✅ supabaseReady event fired');
+            resolve(window.supabaseClient);
         };
 
         const onTimeout = setTimeout(() => {
             cleanup();
-            reject(new Error('Authentication service is still loading. Please try again.'));
+            
+            // Last resort: check if client is available
+            if (window.supabaseClient) {
+                console.log('[Auth] ⚠️ Timeout but client is available, using it');
+                resolve(window.supabaseClient);
+            } else {
+                const errorMsg = 'Authentication service failed to initialize after 15 seconds. Please refresh the page.';
+                console.error('[Auth] ❌ ' + errorMsg);
+                reject(new Error(errorMsg));
+            }
         }, timeoutMs);
 
         const cleanup = () => {
@@ -90,14 +108,20 @@ async function getSupabaseClient() {
             window.removeEventListener('supabaseReady', onReady);
         };
 
+        console.log('[Auth] 👂 Listening for supabaseReady event');
         window.addEventListener('supabaseReady', onReady);
+        
+        // Also poll in case event doesn't fire
+        const pollInterval = setInterval(() => {
+            if (window.supabaseClient && !eventFired) {
+                console.log('[Auth] ✅ supabaseClient detected via polling');
+                eventFired = true;
+                cleanup();
+                clearInterval(pollInterval);
+                resolve(window.supabaseClient);
+            }
+        }, 500);
     });
-
-    if (!window.supabaseClient) {
-        throw new Error('Authentication service is not available. Please refresh the page.');
-    }
-
-    return window.supabaseClient;
 }
 
 // Handle login
@@ -207,9 +231,24 @@ async function handleRegister(e) {
     
     try {
         const supabaseClient = await getSupabaseClient();
+        
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            throw new Error('Please enter a valid email address');
+        }
+        
+        // Validate password length
+        if (password.length < 6) {
+            throw new Error('Password must be at least 6 characters long');
+        }
 
         // Extract username from email (before @ symbol)
         const username = email.split('@')[0];
+        
+        // Check if email already exists by attempting to get the user
+        // This is a workaround since Supabase doesn't expose a direct "email exists" check
+        // We'll rely on the signUp error, but add better error message handling
         
         const { data, error } = await supabaseClient.auth.signUp({
             email: email,
@@ -222,7 +261,18 @@ async function handleRegister(e) {
             }
         });
         
-        if (error) throw error;
+        if (error) {
+            // Check for specific error messages
+            if (error.message.includes('already registered') || error.message.includes('duplicate') || error.message.includes('User already exists')) {
+                throw new Error('This email is already registered. Please use a different email or try logging in.');
+            }
+            throw error;
+        }
+
+        // Check if a user was actually created
+        if (!data || !data.user) {
+            throw new Error('Registration failed. Please try again.');
+        }
 
         // If email confirmation is enabled, Supabase returns user but no session.
         if (data?.session) {
@@ -244,7 +294,8 @@ async function handleRegister(e) {
         }
         
     } catch (error) {
-        errorDiv.textContent = error.message;
+        console.error('Registration error:', error);
+        errorDiv.textContent = error.message || 'Registration failed. Please try again.';
         errorDiv.style.display = 'block';
         button.disabled = false;
         button.textContent = 'Create Account';
