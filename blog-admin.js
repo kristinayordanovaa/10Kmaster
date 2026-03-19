@@ -11,14 +11,20 @@ function generateSlug(title) {
 }
 
 // Initialize blog posts on load
-document.addEventListener('DOMContentLoaded', async () => {
-    // Wait a tick to ensure supabase-config.js has initialized
-    await new Promise(resolve => setTimeout(resolve, 100));
+async function initializeBlogAdmin() {
+    // Wait for supabase-config.js to initialize (up to 10 seconds)
+    let retries = 0;
+    while (!window.supabaseClient && retries < 100) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        retries++;
+    }
     
     if (!window.supabaseClient) {
-        console.error('Supabase client not initialized');
+        console.error('[Blog Admin] Supabase client initialization timeout');
         return;
     }
+    
+    console.log('[Blog Admin] Supabase client ready, checking admin status');
     
     // Check if user is admin (checkAdmin function is in auth.js)
     // This will redirect if not admin
@@ -30,7 +36,33 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Add event listeners for SEO field updates
         setupSEOFieldListeners();
     }
-});
+}
+
+// Also listen for supabaseReady event in case initialization happens after script loads
+function setupBlogAdminEventListener() {
+    window.addEventListener('supabaseReady', async () => {
+        console.log('[Blog Admin] supabaseReady event received');
+        if (window.supabaseClient) {
+            const isAdmin = await checkAdmin();
+            if (isAdmin) {
+                // Only load if not already loaded
+                if (allBlogPosts.length === 0 && document.getElementById('blog-loading-state')?.style.display !== 'none') {
+                    loadBlogPosts();
+                    setupSEOFieldListeners();
+                }
+            }
+        }
+    });
+}
+
+setupBlogAdminEventListener();
+
+// Call initialization when document is ready or immediately if already loaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeBlogAdmin);
+} else {
+    initializeBlogAdmin();
+}
 
 // Setup event listeners for SEO fields
 function setupSEOFieldListeners() {
