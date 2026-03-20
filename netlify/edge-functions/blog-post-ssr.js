@@ -189,9 +189,9 @@ function markedToHtml(markdown) {
             if (para.startsWith('#')) {
                 const level = para.match(/^#+/)[0].length;
                 const content = para.replace(/^#+\s/, '');
-                return \`<h\${level}>\${escapeHtml(content)}</h\${level}>\`;
+                return `<h${level}>${escapeHtml(content)}</h${level}>`;
             }
-            return \`<p>\${escapeHtml(para)}</p>\`;
+            return `<p>${escapeHtml(para)}</p>`;
         })
         .join('');
 }
