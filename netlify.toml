@@ -5,7 +5,19 @@
 # - SUPABASE_URL: Your Supabase project URL
 # - SUPABASE_ANON_KEY: Your Supabase anonymous/public key
 
+# Edge Functions configuration
+[functions]
+  directory = "netlify/edge-functions"
+  
 [[redirects]]
   from = "/api/config"
   to = "/.netlify/functions/config"
   status = 200
+
+# HTTP2 Push for better performance
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "SAMEORIGIN"
+    X-XSS-Protection = "1; mode=block"

@@ -10,11 +10,16 @@
     let libCheckAttempts = 0;
     const MAX_LIB_CHECK_RETRIES = 100; // Wait up to 10 seconds for Supabase library
     
-    // Set local development credentials immediately
+    // Set local development credentials from environment variables
     const setLocalCredentials = () => {
-        console.log('[Supabase Config] ⚙️ Loading local development credentials');
-        SUPABASE_URL = 'https://ggbcxmyszuahivgjzmou.supabase.co';
-        SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdnYmN4bXlzenVhaGl2Z2p6bW91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MzIzNDMsImV4cCI6MjA4NzQwODM0M30.xNh9OnipOjkmd-QIqzUSUcEi-bbxz7IVmfoXEqc6TNs';
+        console.log('[Supabase Config] ⚙️ Loading credentials from environment variables');
+        SUPABASE_URL = process.env.SUPABASE_URL || process.env.REACT_APP_SUPABASE_URL;
+        SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.REACT_APP_SUPABASE_ANON_KEY;
+        
+        if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+            console.error('[Supabase Config] ❌ Environment variables not set for local development');
+            return false;
+        }
         return true;
     };
     

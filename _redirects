@@ -1,4 +1,8 @@
 # Netlify redirect rules
 
-# Clean URLs for blog posts: /blog/slug → blog-post.html?slug=slug
-/blog/:slug  /blog-post.html?slug=:slug  200
+# Blog posts use Edge Function for server-side rendering (SSR) - critical for SEO
+# Edge function renders posts server-side so Google sees full content
+/blog/:slug  /.netlify/edge-functions/blog-post-ssr  200
+
+# Fallback for blog posts without slug
+/blog  /blog.html  200
